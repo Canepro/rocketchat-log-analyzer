@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RocketChat Analysis Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
+        h1 { text-align: center; color: #1d74f5; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .tabs { list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
+        .tabs li { margin: 0 5px; }
+        .tabs a { display: block; text-decoration: none; color: #555; font-weight: bold; padding: 10px 15px; border-radius: 5px 5px 0 0; transition: all 0.2s ease-in-out; }
+        .tabs a:hover { background-color: #f0f0f0; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; font-size: 0.9em; text-transform: uppercase; }
+        td { word-break: break-word; vertical-align: top; }
+        td pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .tabs a.active-tab-link {
+            background-color: #fff;
+            color: #1d74f5;
+            border: 1px solid #ddd;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 RocketChat Analysis Report</h1>
+
+    <ul class="tabs">
+        {% for key, data in results.items() %}
+            <li><a href="#{{ key }}">{{ data.title }}</a></li>
+        {% endfor %}
+    </ul>
+
+    {% for key, data in results.items() %}
+    <div id="{{ key }}" class="tab-content">
+        <h2>{{ data.title }} ({{ data.content | length }} entries found)</h2>
+
+        {% if data.content %}
+            <table>
+                <thead>
+                    <tr>
+                        {% for header in data.headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data.content %}
+                    <tr>
+                        {% for header in data.headers %}
+                            <td><pre>{{ row.get(header, '') | e }}</pre></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No data found for this section.</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tabs a');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            function showTab(tabId) {
+                tabs.forEach(tabLink => {
+                    tabLink.classList.toggle('active-tab-link', tabLink.getAttribute('href') === '#' + tabId);
+                });
+                contents.forEach(content => {
+                    content.classList.toggle('active', content.id === tabId);
+                });
+            }
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tabId = this.getAttribute('href').substring(1);
+                    showTab(tabId);
+                    history.pushState(null, null, '#' + tabId);
+                });
+            });
+            
+            const initialTabId = window.location.hash.substring(1) || (tabs.length > 0 ? tabs[0].getAttribute('href').substring(1) : null);
+            if (initialTabId) {
+                showTab(initialTabId);
+            }
+        });
+    </script>
+</body>
+</html>
