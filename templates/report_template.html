@@ -18,13 +18,8 @@
         th { background-color: #f2f2f2; font-size: 0.9em; text-transform: uppercase; }
         td { word-break: break-word; vertical-align: top; }
         td pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-            font-size: 0.85em;
-            max-height: 300px;
-            overflow-y: auto;
+            margin: 0; white-space: pre-wrap; word-wrap: break-word; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 0.85em; max-height: 300px; overflow-y: auto;
         }
         
         .tab-content { display: none; }
@@ -32,12 +27,12 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .tabs a.active-tab-link {
-            background-color: #fff;
-            color: #1d74f5;
-            border: 1px solid #ddd;
-            border-bottom: 1px solid #fff;
-            margin-bottom: -1px;
+            background-color: #fff; color: #1d74f5; border: 1px solid #ddd;
+            border-bottom: 1px solid #fff; margin-bottom: -1px;
         }
+        
+        .recommendations { list-style-type: '💡'; padding-left: 2em; }
+        .recommendations li { margin-bottom: 1em; padding-left: 0.5em; }
     </style>
 </head>
 <body>
@@ -45,15 +40,31 @@
 
     <ul class="tabs">
         {% for key, data in results.items() %}
-            <li><a href="#{{ key }}">{{ data.title }}</a></li>
+            {% if data.content %}
+                <li><a href="#{{ key }}">{{ data.title }}</a></li>
+            {% endif %}
         {% endfor %}
     </ul>
 
     {% for key, data in results.items() %}
+    {% if data.content %}
     <div id="{{ key }}" class="tab-content">
-        <h2>{{ data.title }} ({{ data.content | length }} entries found)</h2>
+        
+        {% if key == 'logs' %}
+            <h2>{{ data.title }} (Displaying {{ data.content | length }} of {{ data.total_count }} entries found)</h2>
+        {% elif key == 'recommendations' %}
+            <h2>{{ data.title }}</h2>
+        {% else %}
+            <h2>{{ data.title }} ({{ data.content | length }} entries found)</h2>
+        {% endif %}
 
-        {% if data.content %}
+        {% if key == 'recommendations' %}
+            <ul class="recommendations">
+            {% for item in data.content %}
+                <li>{{ item }}</li>
+            {% endfor %}
+            </ul>
+        {% elif data.content and data.headers %}
             <table>
                 <thead>
                     <tr>
@@ -72,10 +83,13 @@
                     {% endfor %}
                 </tbody>
             </table>
+        {% elif data.content %}
+             <p>Data found but no headers defined for this section.</p>
         {% else %}
             <p>No data found for this section.</p>
         {% endif %}
     </div>
+    {% endif %}
     {% endfor %}
     
     <script>
@@ -84,12 +98,8 @@
             const contents = document.querySelectorAll('.tab-content');
             
             function showTab(tabId) {
-                tabs.forEach(tabLink => {
-                    tabLink.classList.toggle('active-tab-link', tabLink.getAttribute('href') === '#' + tabId);
-                });
-                contents.forEach(content => {
-                    content.classList.toggle('active', content.id === tabId);
-                });
+                tabs.forEach(tabLink => tabLink.classList.toggle('active-tab-link', tabLink.getAttribute('href') === '#' + tabId));
+                contents.forEach(content => content.classList.toggle('active', content.id === tabId));
             }
             
             tabs.forEach(tab => {
@@ -102,8 +112,11 @@
             });
             
             const initialTabId = window.location.hash.substring(1) || (tabs.length > 0 ? tabs[0].getAttribute('href').substring(1) : null);
-            if (initialTabId) {
+            if (initialTabId && document.getElementById(initialTabId)) {
                 showTab(initialTabId);
+            } else if (tabs.length > 0) {
+                // Fallback to the first available tab if hash is invalid
+                showTab(tabs[0].getAttribute('href').substring(1));
             }
         });
     </script>
