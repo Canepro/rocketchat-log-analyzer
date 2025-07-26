@@ -2,7 +2,8 @@
 
 A Python tool to parse and analyze Rocket.Chat support dumps, generating a clean, interactive HTML report to help diagnose server issues quickly.
 
-![HTML Report Screenshot](image_c23f45.jpg)
+![HTML Report Screenshot](<img width="3772" height="1034" alt="Screenshot_1" src="https://github.com/user-attachments/assets/c8820ef9-ceca-4946-bc6e-bd7fe340136a" />
+)
 
 This tool processes key JSON files from a support dump, including server statistics, workspace settings, omnichannel configurations, installed apps, and system logs, presenting them in an easy-to-navigate tabbed interface.
 
