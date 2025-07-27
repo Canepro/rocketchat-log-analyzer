@@ -2,13 +2,14 @@
 
 **Current Version:** v1.2.0
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  
-[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![Latest Release](https://img.shields.io/github/v/release/Canepro/rocketchat-log-analyzer?label=Latest%20Release&color=brightgreen)](https://github.com/Canepro/rocketchat-log-analyzer/releases)
 
 A Python tool that automates the analysis of Rocket.Chat support dumps. The tool can be run via a simple web interface or a command-line script to generate a user-friendly HTML report.
 
-![HTML Report Screenshot](https://i.imgur.com/g0rGf13.png)
+[HTML Report Screenshot]
+<img width="2331" height="1267" alt="Screenshot_3" src="https://github.com/user-attachments/assets/70c245e7-b5df-4bdd-a308-9c92346c5da9" />
 
 ---
 
