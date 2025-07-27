@@ -9,68 +9,57 @@
 A Python tool that automates the analysis of Rocket.Chat support dumps. The tool parses multiple JSON files from a dump, redacts sensitive information, and generates a single, user-friendly HTML report to help diagnose server issues.
 
 [HTML Report Screenshot]
-<img width="1252" height="718" alt="Screenshot_2" src="https://github.com/user-attachments/assets/6de8dbb0-ef03-4f55-bbfd-6ad45a2f2cb2" />
+<img width="1252" height="718" alt="Screenshot_2" src="https://github.com/user-attachments/assets/20dc22d3-97a2-459e-b8c5-ffe750febfd4" />
 
----
 
 ## ✨ Key Features
 
-- 🔍 **Comprehensive Analysis**: Parses statistics, settings, apps, omnichannel configs, and logs.
-- 📊 **Interactive HTML Report**: Generates a single, self-contained HTML file with interactive tables.
-- 🎯 **Actionable Recommendations**: Provides a knowledge base with detailed solutions for common errors.
-- 🔐 **Secure Redaction**: Automatically redacts sensitive keywords like "password," "secret," or "token."
-- ⚡ **Robust Parsing**: Correctly handles nested JSON logs and structural variations.
-- 🖥️ **Cross-Platform**: Runs on any system with Python 3.8+.
-
----
+-   🔍 **Comprehensive Analysis**: Parses statistics, settings, apps, omnichannel configs, and logs.
+-   📊 **Interactive HTML Report**: Generates a single, self-contained HTML file with interactive tables.
+-   🎯 **Actionable Recommendations**: Provides a knowledge base with detailed solutions for common errors.
+-   🔐 **Secure Redaction**: Automatically redacts sensitive keywords like "password," "secret," or "token."
+-   ⚡ **Robust Parsing**: Correctly handles nested JSON logs and structural variations.
+-   🖥️ **Cross-Platform**: Runs on any system with Python 3.8+.
 
 ## 🚀 Quick Start
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/Canepro/rocketchat-log-analyzer.git
-   cd rocketchat-log-analyzer
-````
+1.  **Clone the Repository**
+    ```bash
+    git clone [https://github.com/Canepro/rocketchat-log-analyzer.git](https://github.com/Canepro/rocketchat-log-analyzer.git)
+    cd rocketchat-log-analyzer
+    ```
 
-2. **Install Dependencies**
+2.  **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Analysis**
-   Provide the path to your unzipped support dump directory.
-
-   ```bash
-   python main.py /path/to/your/support-dump-directory
-   ```
-
-   Your HTML report will be generated and opened in your browser automatically.
-
----
+3.  **Run the Analysis**
+    Provide the path to your unzipped support dump directory.
+    ```bash
+    python main.py /path/to/your/support-dump-directory
+    ```
+    Your HTML report will be generated and opened in your browser automatically.
 
 ## 📋 Prerequisites
 
-* A Rocket.Chat support dump (unzipped into a directory).
-* Python 3.8+
-* Packages from `requirements.txt`.
-
----
+-   A Rocket.Chat support dump (unzipped into a directory).
+-   Python 3.8+
+-   Packages from `requirements.txt`.
 
 ## ⚙️ Usage and Options
 
 The tool offers several command-line arguments to customize its behavior.
 
-| Argument        | Description                                                                  |
-| --------------- | ---------------------------------------------------------------------------- |
-| `dump_path`     | **(Required)** The path to the support dump directory.                       |
-| `--output-dir`  | Directory to save the generated reports. *Default: `reports/`*               |
-| `--log-level`   | Minimum log level to report (e.g., 30 for WARNING). *Default: 50 (CRITICAL)* |
-| `--json-output` | Also output the raw analysis data as a JSON file.                            |
-| `--no-browser`  | Prevents the script from automatically opening the HTML report.              |
+| Argument          | Description                                                                    |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `dump_path`       | **(Required)** The path to the support dump directory.                         |
+| `--output-dir`    | Directory to save the generated reports. *Default: `reports/`* |
+| `--log-level`     | Minimum log level to report (e.g., 30 for WARNING). *Default: 50 (CRITICAL)* |
+| `--json-output`   | Also output the raw analysis data as a JSON file.                              |
+| `--no-browser`    | Prevents the script from automatically opening the HTML report.                |
 
 **Example with advanced options:**
-
 ```bash
 # Analyze a dump, report all logs from WARNING level up, and save a JSON copy
 python main.py /path/to/dump --log-level 30 --json-output
