@@ -8,7 +8,8 @@
 
 A Python tool that automates the analysis of Rocket.Chat support dumps. The tool parses multiple JSON files from a dump, redacts sensitive information, and generates a single, user-friendly HTML report to help diagnose server issues.
 
-![HTML Report Screenshot](https://i.imgur.com/g0rGf13.png)
+[HTML Report Screenshot]
+<img width="1252" height="718" alt="Screenshot_2" src="https://github.com/user-attachments/assets/6de8dbb0-ef03-4f55-bbfd-6ad45a2f2cb2" />
 
 ---
 
