@@ -1,10 +1,13 @@
 # analyzer.py
 import json
 import logging
-import re # v1.2.0: Import regex module
+import re
 from collections import defaultdict
+from pathlib import Path
 
-# v1.2.0: The old RECOMMENDATIONS dictionary is now replaced by the external knowledge_base.json
+# Construct an absolute path to the knowledge base to ensure it's always found.
+BASE_DIR = Path(__file__).resolve().parent
+KNOWLEDGE_BASE_PATH = BASE_DIR / 'knowledge_base.json'
 
 def _format_value(value):
     """Formats a setting's value into a string, handling dicts/lists."""
@@ -41,9 +44,13 @@ def _process_settings_list(settings_list, key_field='_id', value_field='value'):
 
 def analyze_logs(file_path, min_level=50):
     """Parses logs from a Rocket.Chat support dump file."""
-    # This initial parsing logic from v1.1.0 is preserved for robustness
     found_entries = []
     try:
+        # Check if file_path is None or doesn't exist before trying to open
+        if not file_path or not file_path.exists():
+            logging.warning(f"Log file not found at path: {file_path}")
+            return {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': []}
+
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
@@ -76,24 +83,16 @@ def analyze_logs(file_path, min_level=50):
         ]
         
         total_entry_count = len(filtered_entries)
-        if not filtered_entries:
-            logging.info(f"No log entries found with level >= {min_level}.")
-
         limited_entries = filtered_entries[-500:]
-
         summary = defaultdict(lambda: {'Message': '', 'Count': 0, 'LastSeen': ''})
         
-        # --- START: v1.2.0 Smarter Recommendations Logic ---
-        
-        # Load the knowledge base from the external JSON file
         try:
-            with open('knowledge_base.json', 'r', encoding='utf-8') as f:
+            with open(KNOWLEDGE_BASE_PATH, 'r', encoding='utf-8') as f:
                 knowledge_base = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             knowledge_base = []
-            logging.warning("knowledge_base.json not found or is invalid. No recommendations will be generated.")
+            logging.warning(f"Knowledge base not found or invalid at {KNOWLEDGE_BASE_PATH}.")
 
-        # Use a dictionary to store unique recommendations by title to avoid duplicates
         found_recommendations = {} 
         for entry in filtered_entries:
             msg = entry.get('msg', 'Unknown Error')
@@ -101,23 +100,19 @@ def analyze_logs(file_path, min_level=50):
             summary[msg]['Count'] += 1
             summary[msg]['LastSeen'] = entry.get('time', '')
             
-            # Match log messages against patterns in the knowledge base
             for kb_entry in knowledge_base:
-                if re.search(kb_entry['pattern'], msg, re.IGNORECASE):
-                    # Add the detailed recommendation object if its title is not already found
+                # The (?i) flag in the pattern now handles case-insensitivity.
+                if re.search(kb_entry['pattern'], msg):
                     if kb_entry['title'] not in found_recommendations:
                         found_recommendations[kb_entry['title']] = kb_entry
         
-        # Convert the dictionary of unique recommendations back to a list
         recommendations = list(found_recommendations.values())
-
-        # --- END: v1.2.0 Smarter Recommendations Logic ---
 
         return {
             'summary': sorted(summary.values(), key=lambda x: x['Count'], reverse=True),
             'all_errors': limited_entries,
             'total_error_count': total_entry_count,
-            'recommendations': recommendations # Pass the new rich recommendation objects
+            'recommendations': recommendations
         }
     except Exception as e:
         logging.error(f"Error analyzing logs at '{file_path}': {e}")
@@ -126,6 +121,7 @@ def analyze_logs(file_path, min_level=50):
 def analyze_settings(file_path):
     """Parses the main settings file, handling both list and dict formats."""
     try:
+        if not file_path or not file_path.exists(): return []
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
@@ -144,6 +140,7 @@ def analyze_settings(file_path):
 def analyze_apps(file_path):
     """Parses the installed apps file."""
     try:
+        if not file_path or not file_path.exists(): return []
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         apps_list = data.get('apps', []) if isinstance(data, dict) else data
@@ -157,6 +154,7 @@ def analyze_apps(file_path):
 def analyze_omnichannel(file_path):
     """Parses omnichannel settings safely from multiple possible structures."""
     try:
+        if not file_path or not file_path.exists(): return []
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
@@ -182,6 +180,7 @@ def analyze_omnichannel(file_path):
 def analyze_statistics(file_path):
     """Parses server statistics and filters out null values."""
     try:
+        if not file_path or not file_path.exists(): return []
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         stats = {
