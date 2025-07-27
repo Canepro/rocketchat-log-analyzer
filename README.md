@@ -8,7 +8,8 @@
 
 ---
 
-![Screenshot of the Web App UI](./assets/screenshot.png)
+[Screenshot of the Web App UI]
+<img width="2331" height="1267" alt="Screenshot_3" src="https://github.com/user-attachments/assets/419f31b5-36ea-47e4-b731-cb675f578889" />
 
 ---
 
