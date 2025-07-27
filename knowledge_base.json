@@ -1,142 +1,100 @@
 [
   {
-    "pattern": "No real time data received recently",
+    "pattern": "(?i)MongoTimeoutException|MongoTimeoutError|timed out.*connecting to database",
+    "title": "MongoDB Connection Timeout",
+    "description": "A timeout error occurred during connection to the MongoDB database, commonly due to network latency, incorrect connection strings, firewall restrictions, or server overload.",
+    "solution": "Verify the MONGO_URL environment variable for correctness. For replica sets, ensure the connection string is valid and append parameters like '?serverSelectionTimeoutMS=30000&connectTimeoutMS=30000' to extend timeouts. Check network connectivity, firewall rules, and ensure the MongoDB service is running.",
+    "source": "https://docs.rocket.chat/docs/additional-mongodb-driver-options"
+  },
+  {
+    "pattern": "(?i)User not found",
+    "title": "LDAP: User Not Found",
+    "description": "An authentication attempt failed because the user could not be found. This is common in LDAP setups.",
+    "solution": "Verify the user's credentials are correct. Check the LDAP 'User Search Filter' in Admin settings to ensure it correctly queries for users (e.g., '(&(objectClass=user)(sAMAccountName=#{user}))'). Enable LDAP synchronization to proactively import users and prevent recurrence.",
+    "source": "https://docs.rocket.chat/docs/ldap"
+  },
+  {
+    "pattern": "(?i)Invalid json response body.*Federation",
+    "title": "Federation JSON Response Error",
+    "description": "The server received an invalid or malformed JSON response when communicating with another federated server.",
+    "solution": "This is often an issue with the remote server it's trying to federate with. Check the federation settings and ensure the remote server is healthy and configured correctly. Verify DNS and network connectivity between servers. Note that Matrix Federation is deprecated; consider migrating to native federation.",
+    "source": "https://docs.rocket.chat/docs/rocketchat-release-notes"
+  },
+  {
+    "pattern": "(?i)Failed to communicate with Rocket.Chat Cloud",
+    "title": "Failure to Communicate with Cloud",
+    "description": "The server could not connect to Rocket.Chat's cloud services, which can affect push notifications, marketplace apps, and license validation.",
+    "solution": "Verify the server has a stable internet connection and can resolve DNS for 'cloud.rocket.chat'. Check for firewall rules or proxies that might be blocking outbound connections on port 443. Configure proxies in environment variables if needed.",
+    "source": "https://docs.rocket.chat/docs/additional-configurations"
+  },
+  {
+    "pattern": "(?i)Input buffer contains unsupported image format",
+    "title": "Unsupported Image Format",
+    "description": "A user attempted to upload an image file that is not in a supported format (e.g., JPEG, PNG, GIF).",
+    "solution": "Check the allowed file types under Admin > File Upload > Accepted Media Types. Ensure the user is uploading a standard image format like JPEG, PNG, or GIF. This error can sometimes indicate a corrupted file; add clear error messages for users as per recent fixes.",
+    "source": "https://docs.rocket.chat/docs/rocketchat-release-notes"
+  },
+  {
+    "pattern": "(?i)No real time data received recently",
     "title": "WebSocket Connection Issue",
     "description": "This may indicate a WebSocket connection issue, often resulting in greyed-out messages or lack of real-time updates.",
-    "solution": "Ensure that your server supports WebSockets and check any reverse proxy configurations (e.g., Nginx, Apache) to properly forward WebSocket connections. Verify network stability and restart the server if needed.",
+    "solution": "Ensure that your server supports WebSockets and check any reverse proxy configurations (e.g., Nginx, Apache) to properly forward WebSocket connections. Verify network stability. Test with tools like WebSocket echo servers (e.g., websocket.org/echo.html).",
     "source": "https://forums.rocket.chat/t/messages-greyed-out-error-no-real-time-data-received-recently/20039"
   },
   {
-    "pattern": "Network request failed",
+    "pattern": "(?i)Network request failed",
     "title": "Network Request Failed in Mobile App",
     "description": "This error often occurs in mobile apps due to network issues, SSL certificate problems, or proxy misconfigurations.",
-    "solution": "Verify that your server's SSL certificate is valid and trusted, ensure the server is reachable from the mobile device, and check for any interfering proxies or firewalls.",
+    "solution": "Verify that your server's SSL certificate is valid and trusted, ensure the server is reachable from the mobile device, and check for any interfering proxies or firewalls. Test connectivity via mobile browsers to isolate app vs. server problems.",
     "source": "https://forums.rocket.chat/t/network-request-failed-on-mobile-app-for-both-ios-and-android/20766"
   },
   {
-    "pattern": "Error contacting Api Server",
-    "title": "API Server Contact Error",
-    "description": "This indicates an issue with contacting the API server, commonly due to incorrect configuration.",
-    "solution": "Check the API URL in your configuration. Ensure the port and protocol (http/https) are correct and the server is running.",
-    "source": "https://docs.rocket.chat/docs/troubleshooting"
-  },
-  {
-    "pattern": "http request to a https server",
+    "pattern": "(?i)http request to a https server",
     "title": "Protocol Mismatch Error",
     "description": "There is a protocol mismatch when sending requests, often after server upgrades or configuration changes.",
-    "solution": "Update your configuration to use the correct protocol, likely HTTPS if your server is secured. Restart the server after changes.",
+    "solution": "Update your configuration to use the correct protocol, likely HTTPS if your server is secured. Restart the server after changes. For reverse proxies, add Nginx directives like 'proxy_pass https://backend;' or Apache mods for SSL forwarding.",
     "source": "https://forums.rocket.chat/t/rocket-chat-via-snap-has-error-on-restart-of-the-application/14249"
   },
   {
-    "pattern": "Workspace in read-only mode",
+    "pattern": "(?i)Workspace in read-only mode",
     "title": "Workspace Read-Only Mode",
     "description": "The workspace is in read-only mode, typically due to disconnection from Rocket.Chat cloud services.",
-    "solution": "Your workspace needs to be connected to the Rocket.Chat cloud. Admins can restore functionality by registering or connecting to the cloud service.",
+    "solution": "Your workspace needs to be connected to the Rocket.Chat cloud. Admins can restore functionality by registering or connecting via Administration > Workspace > Connectivity Services.",
     "source": "https://docs.rocket.chat/docs/troubleshooting"
-  },
-  {
-    "pattern": "URL validation is failing",
-    "title": "URL Validation Failure",
-    "description": "URL validation fails after domain changes or misconfigurations.",
-    "solution": "After changing domains, ensure all site URL settings in Rocket.Chat are updated. Restart the server after changes.",
-    "source": "https://docs.rocket.chat/docs/troubleshooting"
-  },
-  {
-    "pattern": "Parse Error",
-    "title": "Parse Error in OAuth",
-    "description": "Parse error in OAuth setups, often due to endpoint mismatches.",
-    "solution": "In OAuth setups, this can occur if the endpoint returns HTML instead of JSON. Verify the OAuth callback URLs and endpoints are correct.",
-    "source": "https://docs.rocket.chat/docs/troubleshooting"
-  },
-  {
-    "pattern": "MongoDB connection failed",
-    "title": "MongoDB Connection Failure",
-    "description": "Failed to connect to MongoDB, commonly from credential or network issues.",
-    "solution": "Verify MongoDB credentials, network connectivity, and that the MongoDB service is running. Check for firewall restrictions.",
-    "source": "https://docs.rocket.chat/docs/troubleshooting"
-  },
-  {
-    "pattern": "undefined error",
-    "title": "Undefined Error in UI",
-    "description": "Undefined error related to UI loading issues.",
-    "solution": "This may relate to loading issues in the UI. Clear browser cache, check server logs for related errors, and ensure all assets (e.g., main.js) are accessible.",
-    "source": "https://docs.rocket.chat/docs/troubleshooting"
-  },
-  {
-    "pattern": "Failure to reach cloud.rocket.chat",
-    "title": "Failure to Reach Cloud Service",
-    "description": "Unable to reach cloud.rocket.chat, often due to network blocks or server issues.",
-    "solution": "Your server may be blocked by a firewall or blacklist. Test connectivity to cloud.rocket.chat and consider using a different IP or contacting support.",
-    "source": "https://forums.rocket.chat/t/failure-to-reach-cloud-rocket-chat-servers-from-ovh-instance/19901"
   },
   {
     "pattern": "(?i)out of memory|OOM|Killed",
     "title": "Out of Memory Error",
     "description": "Server crashes or stops due to insufficient memory, often after adding swap or on low-RAM setups.",
-    "solution": "1. Upgrade to at least 2GB RAM. 2. Disable unnecessary services like snapd. 3. Monitor resource usage and optimize MongoDB caching.",
+    "solution": "1. Upgrade to at least 2GB RAM. 2. Disable unnecessary services like snapd. 3. Monitor resource usage with tools like htop and optimize MongoDB caching.",
     "source": "https://forums.rocket.chat/t/rocketchat-server-stopped-running-after-creating-swapfile/11565"
-  },
-  {
-    "pattern": "(?i)audio.*(load|fail)",
-    "title": "Audio Recordings Not Loading",
-    "description": "Audio recordings fail to load randomly in the mobile app, leading to app freezes or crashes.",
-    "solution": "1. Switch proxy to Nginx and disable keepalive. 2. Convert m4a files to mp3 using ffmpeg (e.g., ffmpeg -v 5 -i input.m4a -acodec libmp3lame -ac 2 -y output.mp3). 3. Report as a bug to the React Native repository if persists.",
-    "source": "https://forums.rocket.chat/t/audio-recordings-do-not-load-randomly/11349"
-  },
-  {
-    "pattern": "(?i)Connection error, Cannot connect to internet",
-    "title": "App Marketplace Connection Error",
-    "description": "Unable to connect to the App Marketplace despite active internet and cloud registration.",
-    "solution": "Upgrade Rocket.Chat to version 6.6.x or higher. If on Raspberry Pi, check for compatible snaps or use alternative deployment.",
-    "source": "https://forums.rocket.chat/t/how-to-troubleshoot-fix-rocket-chat-server-app-marketplace/20065"
-  },
-  {
-    "pattern": "(?i)presence broadcast|high load on reconnection",
-    "title": "Stability Issue with User Reconnections",
-    "description": "High CPU/RAM load and unavailability when many users disconnect and reconnect simultaneously.",
-    "solution": "1. Temporarily enable 'Disable Presence Broadcast' in settings to stabilize. 2. Optimize presence handling in code or scale instances. 3. Ensure oplog is enabled in MongoDB replicaset.",
-    "source": "https://github.com/RocketChat/Rocket.Chat/issues/21182"
-  },
-  {
-    "pattern": "(?i)phantom notification|random ding dong",
-    "title": "Random Phantom Notifications",
-    "description": "Random notifications (e.g., 'ding dong' sounds) occur without new messages or invites.",
-    "solution": "1. Update to the latest Rocket.Chat version. 2. Check for conflicting browser extensions or app settings. 3. If persists, report as a bug on GitHub with reproduction steps.",
-    "source": "https://github.com/RocketChat/Rocket.Chat/issues/33840"
   },
   {
     "pattern": "(?i)Invalid Workspace URL",
     "title": "Invalid Workspace URL Error",
     "description": "Occurs on Android devices when using the mobile app, often related to configuration mismatches.",
-    "solution": "Verify the workspace URL in the app settings and server configuration. Ensure consistency between server Site_URL and app connections. Update the app if outdated.",
+    "solution": "Verify the workspace URL in the app settings and server configuration. Ensure consistency between server Site_URL and app connections. Update the app if outdated (e.g., issues fixed in versions post-4.57).",
     "source": "https://forums.rocket.chat/t/rocket-chat-errors-on-android-mobile/21531"
   },
   {
     "pattern": "(?i)Too many login attempts|Too Frequent Login errors",
     "title": "Too Frequent Login Errors",
     "description": "Users encounter login failures due to rate limiting or credential issues on new installations.",
-    "solution": "Check for rate limiting in server settings. Verify user credentials and consider resetting passwords. If persistent, review authentication plugins or LDAP configurations.",
+    "solution": "Check for rate limiting in server settings. Verify user credentials and consider resetting passwords. If persistent, review authentication plugins or LDAP configurations. Enable brute-force protection in Administration > Workspace > Settings > Accounts > Login Protection.",
     "source": "https://forums.rocket.chat/t/too-frequent-login-errors/14842"
   },
   {
-    "pattern": "(?i)Notifications Not Working",
-    "title": "Notifications Failure",
-    "description": "Push or email notifications stop working, often after version updates or cloud disconnections.",
-    "solution": "Update to the latest version (e.g., 7.x). Reconnect to Rocket.Chat cloud services. Verify push gateway configurations and test notification settings.",
-    "source": "https://forums.rocket.chat/t/notifications-not-working/22058"
+    "pattern": "(?i)Error: Cannot find module '.*'",
+    "title": "Module Not Found Error",
+    "description": "This error indicates that a required module is missing from the Node.js environment.",
+    "solution": "Ensure all dependencies are installed by running `npm install` or `yarn install`. If the module is a custom one, verify its path and existence in the project. For scoped packages (e.g., @org/module), confirm inclusion in package.json.",
+    "source": "https://docs.npmjs.com/cli/commands/npm-install"
   },
   {
-    "pattern": "(?i)meteor runtime config error",
-    "title": "Meteor Runtime Config Error",
-    "description": "Error during server startup or page loading, leading to stuck home pages or 404 errors.",
-    "solution": "Check for missing resources like main.js. Ensure proper installation and restart the server. If using snaps, refresh and verify dependencies.",
-    "source": "https://forums.rocket.chat/t/rocket-chat-gives-meteor-runtime-config-error/18218"
-  },
-  {
-    "pattern": "(?i)URI maleformed|URI malformed",
-    "title": "URI Malformed Error",
-    "description": "Occurs in logs or during media loading, often in containerized setups like Docker.",
-    "solution": "Update to the latest Rocket.Chat version. Verify container configurations and check for encoding issues in URLs or media files.",
-    "source": "https://github.com/RocketChat/Rocket.Chat/issues"
+    "pattern": "(?i)SyntaxError: Unexpected token",
+    "title": "Syntax Error in JavaScript Code",
+    "description": "This error occurs when there is a syntax mistake in the JavaScript code, such as a missing bracket or semicolon.",
+    "solution": "Review the code for syntax errors. Use a linter like ESLint or a code editor with syntax highlighting to help identify issues.",
+    "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
   }
 ]
