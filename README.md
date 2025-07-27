@@ -1,4 +1,3 @@
-````markdown
 # 🚀 Rocket.Chat Support Dump Analyzer
 
 **Current Version:** v1.2.0
@@ -33,7 +32,7 @@ This tool can be run in two ways. The web app is recommended for most users.
    From the project's root directory, run:
    ```bash
    python app.py
-````
+   ````
 
 2. **Open in Browser**
    Navigate to `http://127.0.0.1:5000/` in your web browser.
