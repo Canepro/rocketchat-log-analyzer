@@ -9,21 +9,16 @@ from jinja2 import Environment, FileSystemLoader
 
 # Import the analysis and reporting functions
 import analyzer
-import reporter
 
 # Initialize the Flask application
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = 'a-super-secret-key-that-you-should-change'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB upload limit
-VERSION = "2.0.0"
+VERSION = "2.1.0" # Updated version
 
 # Log level names mapping for the report
 LOG_LEVEL_NAMES = {
-    10: 'DEBUG',
-    20: 'INFO',
-    30: 'WARNING',
-    40: 'ERROR',
-    50: 'CRITICAL'
+    10: 'DEBUG', 20: 'INFO', 30: 'WARNING', 40: 'ERROR', 50: 'CRITICAL'
 }
 
 def find_dump_path(base_path: Path) -> Path | None:
@@ -89,18 +84,28 @@ def index():
                 log_file_path = files_found.get('logs')
                 
                 log_data = analyzer.analyze_logs(log_file_path, min_level=min_level) if log_file_path and log_file_path.exists() else \
-                           {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': []}
+                           {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': [], 'chart_data_timeline': {}, 'chart_data_severity': {}}
 
                 for key, config in report_sections.items():
-                    if key in ['summary', 'logs', 'recommendations']:
-                        content = log_data.get(key, []) if key != 'logs' else log_data.get('all_errors', [])
-                        results[key] = {'title': config.get('title'), 'content': content, 'headers': config.get('headers'), 'total_count': log_data.get('total_error_count')}
+                    if key == 'summary':
+                        results[key] = {'title': config.get('title'), 'content': log_data.get('summary', []), 'headers': config.get('headers')}
+                    elif key == 'recommendations':
+                         results[key] = {'title': config.get('title'), 'content': log_data.get('recommendations', [])}
+                    elif key == 'logs':
+                        # Pass the entire log_data object to the 'logs' key so the template can access chart data
+                        results[key] = {
+                            'title': config.get('title'),
+                            'content': log_data.get('all_errors', []),
+                            'headers': config.get('headers'),
+                            'total_count': log_data.get('total_error_count'),
+                            'chart_data_timeline': log_data.get('chart_data_timeline', {}),
+                            'chart_data_severity': log_data.get('chart_data_severity', {})
+                        }
                     else:
                         file_to_analyze = files_found.get(key)
                         content = config['analyzer'](file_to_analyze) if file_to_analyze and file_to_analyze.exists() else []
                         results[key] = {'title': config.get('title'), 'content': content, 'headers': config.get('headers')}
                 
-                # Directly render the template to include extra context
                 template_dir = Path(__file__).parent / 'templates'
                 env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
                 template = env.get_template('report_template.html')
