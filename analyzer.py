@@ -1,17 +1,10 @@
 # analyzer.py
 import json
 import logging
+import re # v1.2.0: Import regex module
 from collections import defaultdict
 
-# Knowledge base for providing recommendations based on log messages
-RECOMMENDATIONS = {
-    "API rate limit exceeded": "High API usage detected. Consider increasing the API rate limiter settings under Admin > General > API.",
-    "MongoTimeoutException": "Database connection timed out. Verify the MongoDB server is running, accessible, and not under heavy load.",
-    "Cannot read property 'rid' of null": "This is a common but often benign error related to real-time updates. If it spams the logs, it may indicate an issue with a specific integration or app.",
-    "E11000 duplicate key error": "A database write operation failed due to a duplicate key. This can happen during data migrations or if an app is misbehaving. The system usually recovers, but frequent occurrences should be investigated.",
-    "LDAP Login failed": "LDAP authentication failed. Check the LDAP server connection, bind credentials, and user search filters in Admin > LDAP.",
-    "No agents available": "No agents available in Omnichannel. Verify agents are online and departments are configured correctly."
-}
+# v1.2.0: The old RECOMMENDATIONS dictionary is now replaced by the external knowledge_base.json
 
 def _format_value(value):
     """Formats a setting's value into a string, handling dicts/lists."""
@@ -48,25 +41,23 @@ def _process_settings_list(settings_list, key_field='_id', value_field='value'):
 
 def analyze_logs(file_path, min_level=50):
     """Parses logs from a Rocket.Chat support dump file."""
+    # This initial parsing logic from v1.1.0 is preserved for robustness
     found_entries = []
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # Try to load the whole file as a single JSON object (standard dump format)
         try:
             data = json.loads(content)
             if 'queue' in data and isinstance(data['queue'], list):
                 for item in data['queue']:
                     if isinstance(item, dict) and 'string' in item:
                         try:
-                            # The actual log is an escaped JSON string within the 'string' field
                             log_entry = json.loads(item['string'])
                             found_entries.append(log_entry)
                         except (json.JSONDecodeError, TypeError):
-                            continue # Ignore malformed strings
+                            continue 
         except json.JSONDecodeError:
-            # If the above fails, fall back to line-by-line parsing for other formats (e.g., JSONL)
             logging.info("Could not parse as single JSON object with a queue, falling back to line-by-line parsing.")
             for line in content.splitlines():
                 try:
@@ -78,11 +69,10 @@ def analyze_logs(file_path, min_level=50):
                     else:
                         logging.warning(f"Skipping malformed line: {line.strip()}")
 
-        # Filter entries by the minimum log level
         filtered_entries = [
             entry for entry in found_entries
             if (entry.get('level') is not None and entry.get('level') >= min_level) or \
-               (entry.get('level') is None and min_level <= 20) # Include level-less entries for INFO/DEBUG
+               (entry.get('level') is None and min_level <= 20)
         ]
         
         total_entry_count = len(filtered_entries)
@@ -92,23 +82,42 @@ def analyze_logs(file_path, min_level=50):
         limited_entries = filtered_entries[-500:]
 
         summary = defaultdict(lambda: {'Message': '', 'Count': 0, 'LastSeen': ''})
-        recommendations = set()
+        
+        # --- START: v1.2.0 Smarter Recommendations Logic ---
+        
+        # Load the knowledge base from the external JSON file
+        try:
+            with open('knowledge_base.json', 'r', encoding='utf-8') as f:
+                knowledge_base = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            knowledge_base = []
+            logging.warning("knowledge_base.json not found or is invalid. No recommendations will be generated.")
 
+        # Use a dictionary to store unique recommendations by title to avoid duplicates
+        found_recommendations = {} 
         for entry in filtered_entries:
             msg = entry.get('msg', 'Unknown Error')
             summary[msg]['Message'] = msg
             summary[msg]['Count'] += 1
             summary[msg]['LastSeen'] = entry.get('time', '')
             
-            for keyword, recommendation in RECOMMENDATIONS.items():
-                if keyword.lower() in msg.lower():
-                    recommendations.add(recommendation)
+            # Match log messages against patterns in the knowledge base
+            for kb_entry in knowledge_base:
+                if re.search(kb_entry['pattern'], msg, re.IGNORECASE):
+                    # Add the detailed recommendation object if its title is not already found
+                    if kb_entry['title'] not in found_recommendations:
+                        found_recommendations[kb_entry['title']] = kb_entry
+        
+        # Convert the dictionary of unique recommendations back to a list
+        recommendations = list(found_recommendations.values())
+
+        # --- END: v1.2.0 Smarter Recommendations Logic ---
 
         return {
             'summary': sorted(summary.values(), key=lambda x: x['Count'], reverse=True),
             'all_errors': limited_entries,
             'total_error_count': total_entry_count,
-            'recommendations': list(recommendations)
+            'recommendations': recommendations # Pass the new rich recommendation objects
         }
     except Exception as e:
         logging.error(f"Error analyzing logs at '{file_path}': {e}")
