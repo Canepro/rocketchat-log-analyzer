@@ -1,28 +1,25 @@
 # 🚀 Rocket.Chat Support Dump Analyzer
 
-**Current Version:** v1.1.0  
+**Current Version:** v1.1.0
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![Status](https://img.shields.io/badge/Status-Stable-brightgreen.svg)]()
+[![Status](https://img.shields.io/badge/Status-In%20Development-blue.svg)]()
 
-A Python tool that automates the analysis of Rocket.Chat support dumps. It parses multiple JSON files, redacts sensitive data, and generates a clean HTML report to aid troubleshooting.
+A Python tool that automates the analysis of Rocket.Chat support dumps. The tool parses multiple JSON files from a dump, redacts sensitive information, and generates a single, user-friendly HTML report to help diagnose server issues.
 
-[HTML Report Screenshot]
-<img width="3772" height="1034" alt="Screenshot_1" src="https://github.com/user-attachments/assets/63e64bfc-8341-4743-8a26-72d4e823b0dc" />
-
----
+![HTML Report Screenshot](https://i.imgur.com/g0rGf13.png)
 
 ## ✨ Key Features
 
-- 🔍 **Comprehensive Analysis**: Parses statistics, settings, apps, omnichannel configs, and logs.
-- 📊 **Interactive HTML Report**: Generates a single, self-contained HTML file with a tabbed UI.
-- 🎯 **Actionable Recommendations**: Built-in knowledge base for common issues.
-- 🔐 **Secure Redaction**: Auto-redacts keywords like "password", "secret", "token", etc.
-- ⚡ **Robust Parsing**: Handles nested JSON, log formats, and Rocket.Chat version differences.
-- 🖥️ **Cross-Platform**: Works anywhere Python 3.8+ runs.
+-   🔍 **Comprehensive Analysis**: Parses statistics, settings, apps, omnichannel configs, and logs.
+-   📊 **Interactive HTML Report**: Generates a single, self-contained HTML file with interactive tables.
+-   🎯 **Actionable Recommendations**: Provides a knowledge base with detailed solutions for common errors.
+-   🔐 **Secure Redaction**: Automatically redacts sensitive keywords like "password," "secret," or "token."
+-   ⚡ **Robust Parsing**: Correctly handles nested JSON logs and structural variations.
+-   🖥️ **Cross-Platform**: Runs on any system with Python 3.8+.
 
 ---
-
 ## 🚀 Quick Start
 
 1. **Clone the Repository**
@@ -72,71 +69,40 @@ python main.py /path/to/dump --log-level 30 --json-output
 
 ---
 
-## 🗺️ Project Roadmap
+## 🗺️ Project Roadmap & Changelog
 
-### 🔧 Version 1.2.0: *The "Smarter Analysis" Release*
+This roadmap outlines the planned evolution of the tool. For a detailed history of changes, see the [CHANGELOG.md](CHANGELOG.md).
 
-* **Advanced Recommendations**
-  Externalize `knowledge_base.json` for richer, linked solutions.
+### **Version 1.2.0: The "Smarter Analysis" Release (In Progress)**
 
-* **Interactive Data Tables**
-  Add `DataTables.js` to allow search, sorting, and pagination in reports.
+-   [x] **Priority 1: Advanced Recommendations**: Implemented an external `knowledge_base.json` with regex matching for flexible, detailed, and sourced recommendations.
+-   [x] **Priority 2: Interactive Data Tables**: Integrated DataTables.js to add search, sorting, and pagination to all tables in the HTML report.
 
----
+### **Version 2.0.0: The "Interactive Web App" Release (Planned)**
 
-### 🌐 Version 2.0.0: *The "Interactive Web App" Release*
+-   [ ] **Priority 1: Web Interface with Flask/FastAPI**: Develop a web app for easy file uploads and report viewing.
+-   [ ] **Priority 2: Visualizations with Chart.js**: Add a dashboard with charts for a high-level overview.
 
-* **Web Interface (Flask/FastAPI)**
-  Users upload `.zip` files through a webpage and view reports instantly.
+### **Version 2.1.0: The "Pro" Release (Planned)**
 
-* **Visualizations with Chart.js**
-  Add a "Dashboard" tab with error timelines and log severity pie charts.
-
----
-
-### 💼 Version 2.1.0: *The "Pro" Release*
-
-* **Configuration Best-Practices Analyzer**
-  Add a "Configuration Health" section based on environment checks (e.g. warn if GridFS is used in production).
-
----
+-   [ ] **Priority 1: Configuration Best-Practices Analyzer**: Implement a new module to check for common misconfigurations and provide proactive advice.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Follow these steps:
+Contributions are welcome! If you have a feature request, bug report, or a code contribution, please follow these steps:
 
-1. Fork the repository.
-2. Create a feature branch:
-
-   ```bash
-   git checkout -b feature/your-amazing-feature
-   ```
-3. Commit your changes:
-
-   ```bash
-   git commit -m "Add amazing feature"
-   ```
-4. Push to your fork:
-
-   ```bash
-   git push origin feature/your-amazing-feature
-   ```
-5. Open a Pull Request.
-
----
+1.  **Fork the Repository**: Create your own copy of the project.
+2.  **Create a Feature Branch**: (`git checkout -b feature/AmazingFeature`).
+3.  **Commit Your Changes**: (`git commit -m 'Add some AmazingFeature'`).
+4.  **Push to the Branch**: (`git push origin feature/AmazingFeature`).
+5.  **Open a Pull Request**: Submit your changes for review.
 
 ## 🆘 Support
 
 Please open an issue on GitHub for questions or bug reports.
-🔗 [GitHub Issues](https://github.com/Canepro/rocketchat-log-analyzer/issues)
 
----
+-   🔗 [**GitHub Issues**](https://github.com/Canepro/rocketchat-log-analyzer/issues)
 
 ## 📄 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-```
-
-Let me know if you want a separate `README.md` file output or a version with badges or code snippets customized.
-```

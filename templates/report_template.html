@@ -2,123 +2,303 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RocketChat Analysis Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket.Chat Support Dump Analysis Report</title>
+    
+    <!-- v1.2.0: Added DataTables CSS and jQuery -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
-        h1 { text-align: center; color: #1d74f5; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
-        .tabs { list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
-        .tabs li { margin: 0 5px; }
-        .tabs a { display: block; text-decoration: none; color: #555; font-weight: bold; padding: 10px 15px; border-radius: 5px 5px 0 0; transition: all 0.2s ease-in-out; }
-        .tabs a:hover { background-color: #f0f0f0; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f2f2f2; font-size: 0.9em; text-transform: uppercase; }
-        td { word-break: break-word; vertical-align: top; }
-        td pre {
-            margin: 0; white-space: pre-wrap; word-wrap: break-word; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-            font-size: 0.85em; max-height: 300px; overflow-y: auto;
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f9;
+            color: #333;
         }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .tabs a.active-tab-link {
-            background-color: #fff; color: #1d74f5; border: 1px solid #ddd;
-            border-bottom: 1px solid #fff; margin-bottom: -1px;
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
         }
-        
-        .recommendations { list-style-type: '💡'; padding-left: 2em; }
-        .recommendations li { margin-bottom: 1em; padding-left: 0.5em; }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .tab {
+            overflow: hidden;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        .tab button {
+            background-color: #f1f1f1;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 16px;
+            border-radius: 4px 4px 0 0;
+            margin-right: 2px;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            animation: fadeEffect 0.5s;
+        }
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            word-break: break-all;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        /* v1.2.0: Styles for new recommendation format */
+        .recommendation-entry {
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .recommendation-entry h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .recommendation-entry p {
+            margin: 5px 0;
+        }
+        .recommendation-entry a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .recommendation-entry a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <h1>🚀 RocketChat Analysis Report</h1>
 
-    <ul class="tabs">
-        {% for key, data in results.items() %}
-            {% if data.content %}
-                <li><a href="#{{ key }}">{{ data.title }}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
+<div class="container">
+    <h1>Rocket.Chat Analysis Report</h1>
 
-    {% for key, data in results.items() %}
-    {% if data.content %}
-    <div id="{{ key }}" class="tab-content">
-        
-        {% if key == 'logs' %}
-            <h2>{{ data.title }} (Displaying {{ data.content | length }} of {{ data.total_count }} entries found)</h2>
-        {% elif key == 'recommendations' %}
-            <h2>{{ data.title }}</h2>
-        {% else %}
-            <h2>{{ data.title }} ({{ data.content | length }} entries found)</h2>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Summary')" id="defaultOpen">Summary</button>
+        {% if results.recommendations.content %}
+        <button class="tablinks" onclick="openTab(event, 'Recommendations')">Recommendations</button>
         {% endif %}
+        <button class="tablinks" onclick="openTab(event, 'Statistics')">Statistics</button>
+        <button class="tablinks" onclick="openTab(event, 'Settings')">Settings</button>
+        <button class="tablinks" onclick="openTab(event, 'Omnichannel')">Omnichannel</button>
+        <button class="tablinks" onclick="openTab(event, 'Apps')">Apps</button>
+        <button class="tablinks" onclick="openTab(event, 'Logs')">All Logs</button>
+    </div>
 
-        {% if key == 'recommendations' %}
-            <ul class="recommendations">
-            {% for item in data.content %}
-                <li>{{ item }}</li>
-            {% endfor %}
-            </ul>
-        {% elif data.content and data.headers %}
-            <table>
-                <thead>
-                    <tr>
-                        {% for header in data.headers %}
-                            <th>{{ header }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in data.content %}
-                    <tr>
-                        {% for header in data.headers %}
-                            <td><pre>{{ row.get(header, '') | e }}</pre></td>
-                        {% endfor %}
-                    </tr>
+    <div id="Summary" class="tabcontent">
+        <h2>Error Summary</h2>
+        <p>Displaying analysis for logs at the specified level.</p>
+        <!-- Note: The 'id' attribute is added for DataTables -->
+        <table id="summary_table" class="display">
+            <thead>
+                <tr>
+                    {% for header in results.summary.headers %}
+                    <th>{{ header }}</th>
                     {% endfor %}
-                </tbody>
-            </table>
-        {% elif data.content %}
-             <p>Data found but no headers defined for this section.</p>
-        {% else %}
-            <p>No data found for this section.</p>
-        {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.summary.content %}
+                <tr>
+                    {% for header in results.summary.headers %}
+                    <td>{{ row[header] | e }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- v1.2.0: Updated Recommendations tab -->
+    {% if results.recommendations.content %}
+    <div id="Recommendations" class="tabcontent">
+        <h2>Actionable Recommendations</h2>
+        {% for rec in results.recommendations.content %}
+        <div class="recommendation-entry">
+            <h3>{{ rec.title | e }}</h3>
+            <p><strong>Description:</strong> {{ rec.description | e }}</p>
+            <p><strong>Suggested Solution:</strong> {{ rec.solution | e }}</p>
+            <p><strong>Source:</strong> <a href="{{ rec.source | e }}" target="_blank" rel="noopener noreferrer">Learn More</a></p>
+        </div>
+        {% endfor %}
     </div>
     {% endif %}
-    {% endfor %}
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tabs a');
-            const contents = document.querySelectorAll('.tab-content');
-            
-            function showTab(tabId) {
-                tabs.forEach(tabLink => tabLink.classList.toggle('active-tab-link', tabLink.getAttribute('href') === '#' + tabId));
-                contents.forEach(content => content.classList.toggle('active', content.id === tabId));
-            }
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const tabId = this.getAttribute('href').substring(1);
-                    showTab(tabId);
-                    history.pushState(null, null, '#' + tabId);
-                });
-            });
-            
-            const initialTabId = window.location.hash.substring(1) || (tabs.length > 0 ? tabs[0].getAttribute('href').substring(1) : null);
-            if (initialTabId && document.getElementById(initialTabId)) {
-                showTab(initialTabId);
-            } else if (tabs.length > 0) {
-                // Fallback to the first available tab if hash is invalid
-                showTab(tabs[0].getAttribute('href').substring(1));
-            }
+
+    <div id="Statistics" class="tabcontent">
+        <h2>Server Statistics</h2>
+        <table id="statistics_table" class="display">
+             <thead>
+                <tr>
+                    {% for header in results.statistics.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.statistics.content %}
+                <tr>
+                    {% for header in results.statistics.headers %}
+                    <td>{{ row[header] | e }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="Settings" class="tabcontent">
+        <h2>Workspace Settings</h2>
+        <table id="settings_table" class="display">
+            <thead>
+                <tr>
+                    {% for header in results.settings.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.settings.content %}
+                <tr>
+                    {% for header in results.settings.headers %}
+                    <td>{{ row[header] | e }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="Omnichannel" class="tabcontent">
+        <h2>Omnichannel Settings</h2>
+        <table id="omnichannel_table" class="display">
+            <thead>
+                <tr>
+                    {% for header in results.omnichannel.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.omnichannel.content %}
+                <tr>
+                    {% for header in results.omnichannel.headers %}
+                    <td>{{ row[header] | e }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="Apps" class="tabcontent">
+        <h2>Installed Apps</h2>
+        <table id="apps_table" class="display">
+            <thead>
+                <tr>
+                    {% for header in results.apps.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.apps.content %}
+                <tr>
+                    {% for header in results.apps.headers %}
+                    <td>{{ row[header] | e }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="Logs" class="tabcontent">
+        <h2>All Log Entries</h2>
+        <p>Displaying {{ results.logs.content | length }} of {{ results.logs.total_count }} entries found.</p>
+        <table id="logs_table" class="display">
+            <thead>
+                <tr>
+                    {% for header in results.logs.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.logs.content %}
+                <tr>
+                    {% for header in results.logs.headers %}
+                    <td>{{ row[header] | e }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- v1.2.0: Added jQuery and DataTables JS -->
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+
+    // v1.2.0: Initialize DataTables on all tables with the 'display' class
+    $(document).ready(function() {
+        $('table.display').DataTable({
+            "pageLength": 25 // Set a default number of rows to display
         });
-    </script>
+    });
+</script>
+
 </body>
 </html>
