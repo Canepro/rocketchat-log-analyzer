@@ -10,7 +10,7 @@
 
 ## 📊 Analyzer Dashboard Preview
 
-![Screenshot of the Analyzer's Dashboard](https://github.com/Canepro/rocketchat-log-analyzer/blob/feature/v2.1-dashboard/Screenshot_3.png?raw=true)
+![Screenshot of the Analyzer's Dashboard]([https://github.com/Canepro/rocketchat-log-analyzer/blob/feature/v2.1-dashboard/Screenshot_3.png?raw=true](https://github.com/Canepro/rocketchat-log-analyzer/blob/main/Screenshot_3.png?raw=true))
 
 > Example view of the Rocket.Chat log analyzer dashboard in version 2.1.0
 
