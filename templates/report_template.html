@@ -45,7 +45,8 @@
             background-color: #f8f9fa; border-radius: 4px;
         }
         .recommendation-entry h3 { margin-top: 0; color: #2c3e50; }
-        .recommendation-entry p { margin: 5px 0; }
+        .recommendation-entry p { margin: 10px 0 5px; }
+        .recommendation-entry ul, .recommendation-entry ol { margin-top: 0; padding-left: 20px; }
         .recommendation-entry a { color: #3498db; text-decoration: none; }
         .recommendation-entry a:hover { text-decoration: underline; }
         footer {
@@ -118,8 +119,27 @@
         {% for rec in results.recommendations.content %}
         <div class="recommendation-entry">
             <h3>{{ rec.title | e }}</h3>
+            <p><strong>Category:</strong> {{ rec.category | e }}</p>
             <p><strong>Description:</strong> {{ rec.description | e }}</p>
-            <p><strong>Suggested Solution:</strong> {{ rec.solution | e }}</p>
+            
+            {% if rec.common_causes %}
+            <p><strong>Common Causes:</strong></p>
+            <ul>
+                {% for cause in rec.common_causes %}
+                <li>{{ cause | e }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            
+            {% if rec.troubleshooting_steps %}
+            <p><strong>Troubleshooting Steps:</strong></p>
+            <ol>
+                {% for step in rec.troubleshooting_steps %}
+                <li>{{ step | e }}</li>
+                {% endfor %}
+            </ol>
+            {% endif %}
+
             <p><strong>Source:</strong> <a href="{{ rec.source | e }}" target="_blank" rel="noopener noreferrer">Learn More</a></p>
         </div>
         {% endfor %}
@@ -291,7 +311,7 @@
             });
         }
 
-        // --- Severity Breakdown Chart (Doughnut) ---
+        // Severity Breakdown Chart (Doughnut)
         if (severityData.labels && severityData.labels.length > 0) {
             const severityColorMap = {
                 'CRITICAL': 'rgb(217, 30, 24)',  // Strong Red
