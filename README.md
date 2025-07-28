@@ -8,7 +8,12 @@
 
 ---
 
-## ![Screenshot of the Analyzer's Dashboard](https://github.com/user-attachments/assets/419f31b5-36ea-47e4-b731-cb675f578889)
+## 📊 Analyzer Dashboard Preview
+
+![Screenshot of the Analyzer's Dashboard](https://github.com/Canepro/rocketchat-log-analyzer/blob/feature/v2.1-dashboard/Screenshot_3.png?raw=true)
+
+> Example view of the Rocket.Chat log analyzer dashboard in version 2.1.0
+
 
 ## ✨ Key Features
 
