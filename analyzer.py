@@ -4,10 +4,15 @@ import logging
 import re
 from collections import defaultdict
 from pathlib import Path
+from datetime import datetime
 
 # Construct an absolute path to the knowledge base to ensure it's always found.
 BASE_DIR = Path(__file__).resolve().parent
 KNOWLEDGE_BASE_PATH = BASE_DIR / 'knowledge_base.json'
+
+LOG_LEVEL_NAMES = {
+    10: 'DEBUG', 20: 'INFO', 30: 'WARNING', 40: 'ERROR', 50: 'CRITICAL'
+}
 
 def _format_value(value):
     """Formats a setting's value into a string, handling dicts/lists."""
@@ -49,7 +54,7 @@ def analyze_logs(file_path, min_level=50):
         # Check if file_path is None or doesn't exist before trying to open
         if not file_path or not file_path.exists():
             logging.warning(f"Log file not found at path: {file_path}")
-            return {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': []}
+            return {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': [], 'chart_data_timeline': {}, 'chart_data_severity': {}}
 
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -78,8 +83,7 @@ def analyze_logs(file_path, min_level=50):
 
         filtered_entries = [
             entry for entry in found_entries
-            if (entry.get('level') is not None and entry.get('level') >= min_level) or \
-               (entry.get('level') is None and min_level <= 20)
+            if (entry.get('level') is not None and entry.get('level') >= min_level)
         ]
         
         total_entry_count = len(filtered_entries)
@@ -93,30 +97,66 @@ def analyze_logs(file_path, min_level=50):
             knowledge_base = []
             logging.warning(f"Knowledge base not found or invalid at {KNOWLEDGE_BASE_PATH}.")
 
-        found_recommendations = {} 
+        found_recommendations = {}
+        # New dictionaries for chart data
+        timeline_counts = defaultdict(int)
+        severity_counts = defaultdict(int)
+
         for entry in filtered_entries:
             msg = entry.get('msg', 'Unknown Error')
+            level = entry.get('level')
+            time_str = entry.get('time')
+
+            # --- Populate summary and recommendations ---
             summary[msg]['Message'] = msg
             summary[msg]['Count'] += 1
-            summary[msg]['LastSeen'] = entry.get('time', '')
+            summary[msg]['LastSeen'] = time_str
             
             for kb_entry in knowledge_base:
-                # The (?i) flag in the pattern now handles case-insensitivity.
                 if re.search(kb_entry['pattern'], msg):
                     if kb_entry['title'] not in found_recommendations:
                         found_recommendations[kb_entry['title']] = kb_entry
+            
+            # --- Process data for charts ---
+            if level:
+                severity_counts[level] += 1
+            
+            if time_str:
+                try:
+                    # Parse timestamp and truncate to the minute for bucketing
+                    dt_obj = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                    time_bucket = dt_obj.replace(second=0, microsecond=0)
+                    timeline_counts[time_bucket] += 1
+                except (ValueError, TypeError):
+                    continue
         
         recommendations = list(found_recommendations.values())
+
+        # --- Prepare chart data for Chart.js ---
+        # Timeline data (sorted)
+        sorted_timeline = sorted(timeline_counts.items())
+        chart_data_timeline = {
+            'labels': [dt.strftime('%H:%M') for dt, count in sorted_timeline],
+            'data': [count for dt, count in sorted_timeline]
+        }
+
+        # Severity breakdown data
+        chart_data_severity = {
+            'labels': [LOG_LEVEL_NAMES.get(lvl, f"Level {lvl}") for lvl in severity_counts.keys()],
+            'data': list(severity_counts.values())
+        }
 
         return {
             'summary': sorted(summary.values(), key=lambda x: x['Count'], reverse=True),
             'all_errors': limited_entries,
             'total_error_count': total_entry_count,
-            'recommendations': recommendations
+            'recommendations': recommendations,
+            'chart_data_timeline': chart_data_timeline,
+            'chart_data_severity': chart_data_severity,
         }
     except Exception as e:
         logging.error(f"Error analyzing logs at '{file_path}': {e}")
-        return {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': []}
+        return {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': [], 'chart_data_timeline': {}, 'chart_data_severity': {}}
 
 def analyze_settings(file_path):
     """Parses the main settings file, handling both list and dict formats."""

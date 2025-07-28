@@ -1,120 +1,131 @@
 # 🚀 Rocket.Chat Support Dump Analyzer
 
-**Current Version:** v2.0.0
+**Current Version:** v2.1.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Latest Release](https://img.shields.io/github/v/release/Canepro/rocketchat-log-analyzer?label=Latest%20Release\&color=brightgreen)](https://github.com/Canepro/rocketchat-log-analyzer/releases)
 
 ---
 
-[Screenshot of the Web App UI]
-<img width="2331" height="1267" alt="Screenshot_3" src="https://github.com/user-attachments/assets/419f31b5-36ea-47e4-b731-cb675f578889" />
+## 📊 Analyzer Dashboard Preview
 
----
+![Screenshot of the Analyzer's Dashboard](https://github.com/Canepro/rocketchat-log-analyzer/blob/feature/v2.1-dashboard/Screenshot_3.png?raw=true)
+
+> Example view of the Rocket.Chat log analyzer dashboard in version 2.1.0
+
 
 ## ✨ Key Features
 
-* 🔍 **Easy-to-use Web App**: The primary interface is a web application for simple drag-and-drop analysis.
-* ⚙️ **Interactive Log-Level Filtering**: Dynamically filter the analysis by log severity (e.g., ERROR, WARNING) directly in the UI.
-* 📊 **Interactive HTML Report**: Generates a single, self-contained HTML file with searchable and sortable tables.
-* 🎯 **Actionable Recommendations**: Uses a knowledge base to identify common errors and provide detailed solutions.
-* 🔐 **Secure Redaction**: Automatically redacts sensitive keywords like "password," "secret," or "token."
-* ⚡ **Robust Parsing**: Correctly handles nested JSON logs and structural variations in support dumps.
-
----
-
-## 🚀 Usage
-
-### Web App (Recommended)
-
-This is the easiest way to analyze a support dump.
-
-#### 1. Start the Server
-
-From the project's root directory, run the following command in your terminal:
-
-```bash
-python app.py
-```
-
-#### 2. Open in Browser
-
-Navigate to `http://127.0.0.1:5000/` in your web browser.
-
-#### 3. Upload & Analyze
-
-* Drag and drop your support dump `.zip` file onto the page, or click to select it.
-* Choose the minimum log level you want to analyze.
-* Click **Analyze**.
-* The report will be generated and displayed directly in your browser.
-
-### Command-Line Interface (CLI)
-
-For advanced users or automation, the original CLI is still available.
-
-```bash
-# Example: Analyze a dump for WARNING level logs and higher
-python main.py /path/to/your/support-dump-directory --log-level 30
-```
+* **Visual Dashboard**: Instantly identify trends with charts for log entries over time and severity breakdowns.
+* **Easy-to-use Web App**: A simple drag-and-drop interface for fast analysis.
+* **Actionable Recommendations**: Get detailed solutions for common errors from an expanded knowledge base.
+* **Docker & Podman Support**: Run the application in a containerized environment for maximum compatibility.
+* **Secure Redaction**: Automatically redacts sensitive keywords like "password" or "token."
 
 ---
 
 ## 📋 Prerequisites & Installation
 
-* Python 3.8+
-* Packages listed in `requirements.txt`
+### **Prerequisites**
 
-### Clone the Repository
+* **Docker or Podman** (Recommended)
+* **Python 3.10+** (If not using a container)
 
-```bash
-git clone https://github.com/Canepro/rocketchat-log-analyzer.git
-cd rocketchat-log-analyzer
-```
+### **Installation**
 
-### Install Dependencies
+1. **Clone the Repository**:
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   git clone https://github.com/Canepro/rocketchat-log-analyzer.git
+   cd rocketchat-log-analyzer
+   ```
+
+2. **Install Dependencies** *(if not using a container)*:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ---
 
-## 📜 Project Roadmap & Changelog
+## 🚀 Usage
+
+### **Using Docker or Podman (Easiest Method)**
+
+1. **Build the Container Image**:
+   *For Docker:*
+
+   ```bash
+   docker build -t rocketchat-analyzer .
+   ```
+
+   *For Podman:*
+
+   ```bash
+   podman build -t rocketchat-analyzer .
+   ```
+
+2. **Run the Container**:
+   *For Docker:*
+
+   ```bash
+   docker run -p 5000:5000 rocketchat-analyzer
+   ```
+
+   *For Podman:*
+
+   ```bash
+   podman run -p 5000:5000 rocketchat-analyzer
+   ```
+
+3. **Open in Browser**:
+   Navigate to [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in your web browser to access the application.
+
+### **Running Locally with Python**
+
+1. **Start the Server**:
+
+   ```bash
+   python app.py
+   ```
+
+2. **Open in Browser**:
+   Navigate to [http://127.0.0.1:5000/](http://127.0.0.1:5000/).
+
+---
+
+## 🗸️ Project Roadmap
 
 This roadmap outlines the planned evolution of the tool. For a detailed history of changes, see `CHANGELOG.md`.
 
-### Version 3.0.0: The "Pro" Release (Future)
+* **Version 3.0.0: The "Pro" Release (Future)**
 
-* [ ] Configuration Best-Practices Analyzer: Implement a new module to check for common misconfigurations and provide proactive advice.
+  * [ ] **Configuration Analyzer**: Implement a module to check for common misconfigurations and provide proactive advice.
 
-### Version 2.2.0: The "Hardening" Release (Planned)
+* **Version 2.2.0: The "Hardening" Release (Planned)**
 
-* [ ] Security Hardening: Implement suggestions from code reviews (e.g., externalize `SECRET_KEY`).
-* [ ] Performance Optimization: Refactor the log analyzer to stream large files more efficiently.
-* [ ] Code Quality: Add a basic suite of unit tests for core analysis functions.
+  * [ ] **Security Hardening**: Implement suggestions from code reviews (e.g., externalize `SECRET_KEY`).
+  * [ ] **Performance Optimization**: Refactor the log analyzer to stream large files more efficiently.
+  * [ ] **Code Quality**: Add a basic suite of unit tests.
 
-### Version 2.1.0: The "Dashboard & Visualization" Release (Next Up)
+* **Version 2.1.1: Interactive Dashboard (Next Up)**
 
-* [ ] **Priority 1:** Visualizations with Chart.js: Add a new "Dashboard" tab to the report with charts for errors over time and log severity breakdown.
+  * [ ] **Priority 1**: Implement click-to-filter and hover-to-preview functionality on the timeline chart.
 
-### Version 2.0.0: "Web App Foundation" Release (✅ Latest)
+* **Version 2.1.0: The "Dashboard & Visualization" Release (✅ Current)**
 
-* ✅ **Web Interface**: Implemented a fully functional Flask web application (`app.py`).
-* ✅ **Interactive Uploads**: Created a user-friendly interface for uploading `.zip` dumps with an interactive log level selector.
-* ✅ **In-Browser Reporting**: The web app now runs the complete analysis and renders the report directly in the browser.
+  * ✅ **Visual Dashboard**: Added a new "Dashboard" tab with Chart.js visualizations.
+  * ✅ **Docker Support**: Added a `Dockerfile` for easy, containerized deployment.
+  * ✅ **Intuitive Colors**: Implemented a logical color scheme for the log severity chart.
+  * ✅ **Expanded Knowledge Base**: Updated the knowledge base with more detailed error descriptions and solutions.
+  * ✅ **Python Version Fix**: Updated type hinting for compatibility with Python 3.10+.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you have a feature request, bug report, or a code contribution, please follow these steps:
-
-1. **Fork the Repository**: Create your own copy of the project.
-2. **Create a Feature Branch**: (`git checkout -b feature/AmazingFeature`).
-3. **Commit Your Changes**: (`git commit -m 'Add some AmazingFeature'`).
-4. **Push to the Branch**: (`git push origin feature/AmazingFeature`).
-5. **Open a Pull Request**: Submit your changes for review.
+Contributions are welcome! If you have a feature request, bug report, or a code contribution, please open a pull request.
 
 ---
 
