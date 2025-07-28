@@ -6,6 +6,7 @@ import zipfile
 from pathlib import Path
 from werkzeug.utils import secure_filename
 from jinja2 import Environment, FileSystemLoader
+from typing import Optional # Import Optional for older Python versions
 
 # Import the analysis and reporting functions
 import analyzer
@@ -21,7 +22,7 @@ LOG_LEVEL_NAMES = {
     10: 'DEBUG', 20: 'INFO', 30: 'WARNING', 40: 'ERROR', 50: 'CRITICAL'
 }
 
-def find_dump_path(base_path: Path) -> Path | None:
+def find_dump_path(base_path: Path) -> Optional[Path]:
     """Robustly finds the correct directory containing the support dump files."""
     for path in base_path.rglob('*server-statistics.json'):
         return path.parent
@@ -84,7 +85,7 @@ def index():
                 log_file_path = files_found.get('logs')
                 
                 log_data = analyzer.analyze_logs(log_file_path, min_level=min_level) if log_file_path and log_file_path.exists() else \
-                           {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': [], 'chart_data_timeline': {}, 'chart_data_severity': {}}
+                           {'summary': [], 'all_errors': [], 'total_error_count': 0, 'recommendations': [], 'chart_data_timeline': {}, 'chart_data_severity': {}, 'timeline_full_logs': {}}
 
                 for key, config in report_sections.items():
                     if key == 'summary':
@@ -92,14 +93,14 @@ def index():
                     elif key == 'recommendations':
                          results[key] = {'title': config.get('title'), 'content': log_data.get('recommendations', [])}
                     elif key == 'logs':
-                        # Pass the entire log_data object to the 'logs' key so the template can access chart data
                         results[key] = {
                             'title': config.get('title'),
                             'content': log_data.get('all_errors', []),
                             'headers': config.get('headers'),
                             'total_count': log_data.get('total_error_count'),
                             'chart_data_timeline': log_data.get('chart_data_timeline', {}),
-                            'chart_data_severity': log_data.get('chart_data_severity', {})
+                            'chart_data_severity': log_data.get('chart_data_severity', {}),
+                            'timeline_full_logs': log_data.get('timeline_full_logs', {})
                         }
                     else:
                         file_to_analyze = files_found.get(key)
@@ -125,3 +126,10 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)
+# To run the application, use the command: python app.py
+# Access it in your browser at http://127.0.0.1:5000/
+# Ensure you have the required templates in the 'templates' directory
+# and the analyzer module with the necessary functions defined. 
+# Make sure to install Flask and other dependencies before running the app.
+# Note: The analyzer module should contain the functions used for analyzing the JSON files.
+
