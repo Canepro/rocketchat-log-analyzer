@@ -111,11 +111,19 @@
                 <h3>Log Entries Over Time</h3>
                 <p class="chart-hint">Click on data points to filter logs by date</p>
                 <canvas id="timelineChart"></canvas>
+                <div id="timelineNoData" style="display: none; text-align: center; padding: 40px; color: #666;">
+                    <p>📈 No timeline data available</p>
+                    <p><small>This chart will appear when log entries with timestamps are found.</small></p>
+                </div>
             </div>
             <div class="chart-container">
                 <h3>Log Severity Breakdown</h3>
                 <p class="chart-hint">Click on segments to filter logs by severity level</p>
                 <canvas id="severityChart"></canvas>
+                <div id="severityNoData" style="display: none; text-align: center; padding: 40px; color: #666;">
+                    <p>📊 No severity data available</p>
+                    <p><small>This chart will appear when log entries with different severity levels are found.</small></p>
+                </div>
             </div>
         </div>
     </div>
@@ -326,15 +334,60 @@
     document.getElementById("defaultOpen").click();
 
     $(document).ready(function() {
-        // Store DataTable instance globally for filtering operations
-        window.logsDataTable = $('#logs_table').DataTable({
-            "pageLength": 25
-        });
+        // Initialize DataTables for all tables with reinitialization check
+        if (!$.fn.DataTable.isDataTable('#logs_table')) {
+            window.logsDataTable = $('#logs_table').DataTable({
+                "pageLength": 25,
+                "destroy": true
+            });
+        } else {
+            // Use existing DataTable instance
+            window.logsDataTable = $('#logs_table').DataTable();
+        }
+
+        // Initialize other tables
+        if (!$.fn.DataTable.isDataTable('#settings_table')) {
+            $('#settings_table').DataTable({
+                "pageLength": 10,
+                "destroy": true,
+                "autoWidth": false,
+                "columnDefs": [
+                    { "width": "30%", "targets": 0 },
+                    { "width": "70%", "targets": 1 }
+                ]
+            });
+        }
+
+        if (!$.fn.DataTable.isDataTable('#statistics_table')) {
+            $('#statistics_table').DataTable({
+                "pageLength": 10,
+                "destroy": true
+            });
+        }
+
+        if (!$.fn.DataTable.isDataTable('#omnichannel_table')) {
+            $('#omnichannel_table').DataTable({
+                "pageLength": 10,
+                "destroy": true
+            });
+        }
+
+        if (!$.fn.DataTable.isDataTable('#apps_table')) {
+            $('#apps_table').DataTable({
+                "pageLength": 10,
+                "destroy": true
+            });
+        }
 
         // --- Chart.js Initialization ---
         const timelineData = {{ results.logs.chart_data_timeline | tojson }};
         const severityData = {{ results.logs.chart_data_severity | tojson }};
         const logEntries = {{ results.logs.content | tojson }};
+
+        // Store chart data in global scope for export functions
+        window.timelineData = timelineData;
+        window.severityData = severityData;
+        window.logEntries = logEntries;
 
         // Global chart instances for interaction
         let timelineChart = null;
@@ -342,6 +395,9 @@
 
         // Timeline Chart (Line) with Interactive Features
         if (timelineData.labels && timelineData.labels.length > 0) {
+            document.getElementById('timelineChart').style.display = 'block';
+            document.getElementById('timelineNoData').style.display = 'none';
+            
             const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
             timelineChart = new Chart(ctxTimeline, {
                 type: 'line',
@@ -424,6 +480,10 @@
                     }
                 }
             });
+        } else {
+            // Show no-data message for timeline
+            document.getElementById('timelineChart').style.display = 'none';
+            document.getElementById('timelineNoData').style.display = 'block';
         }
 
         // Severity Breakdown Chart (Doughnut) with Interactive Features
@@ -501,6 +561,10 @@
                     }
                 }
             });
+        } else {
+            // Show no-data message for severity chart
+            document.getElementById('severityChart').style.display = 'none';
+            document.getElementById('severityNoData').style.display = 'block';
         }
 
         // Add window resize handler to prevent infinite chart stretching
@@ -517,251 +581,326 @@
             }, 250);
         });
 
-        // Interactive filtering functions
-        function filterLogsByDate(targetDate) {
-            try {
-                console.log('Filtering by date:', targetDate);
-                showFilterNotification(`Filtering logs for ${targetDate}...`);
-                
-                // Switch to logs tab first
-                switchToLogsTab();
-                
-                // Wait for tab to load, then apply filter
-                setTimeout(() => {
-                    // Use the global DataTable instance
-                    const table = window.logsDataTable;
-                    if (table) {
-                        // Clear previous filters
-                        table.search('').columns().search('').draw();
-                        
-                        // Apply date filter - search across all columns for the time pattern
-                        // targetDate is in HH:MM format, so we search for that pattern
-                        table.search(targetDate, false, false).draw();
-                        
-                        // Update notification
-                        const filteredCount = table.rows({search: 'applied'}).count();
+        // Store chart instances globally for tab switching and interactions
+        window.timelineChart = timelineChart;
+        window.severityChart = severityChart;
+    });
+
+    // Interactive filtering functions (moved to global scope for chart access)
+    function filterLogsByDate(targetDate) {
+        try {
+            console.log('Filtering by date:', targetDate);
+            showFilterNotification(`Filtering logs for ${targetDate}...`);
+            
+            // Switch to logs tab first
+            switchToLogsTab();
+            
+            // Wait for tab to load, then apply filter
+            setTimeout(() => {
+                // Use the global DataTable instance
+                const table = window.logsDataTable;
+                if (table) {
+                    // Clear previous filters
+                    table.search('').columns().search('').draw();
+                    
+                    // Try different date format variations
+                    let filteredCount = 0;
+                    const dateVariations = [
+                        targetDate,                           // Original format (e.g., "14:30")
+                        targetDate.split(':')[0],            // Just hour (e.g., "14")
+                        `${targetDate}:`,                     // With trailing colon
+                        `:${targetDate}`,                     // With leading colon
+                    ];
+                    
+                    // Also try to search in timestamp/date columns specifically
+                    for (let dateVar of dateVariations) {
+                        table.search(dateVar, false, false).draw();
+                        filteredCount = table.rows({search: 'applied'}).count();
+                        if (filteredCount > 0) {
+                            console.log(`Found matches with date variation: ${dateVar}`);
+                            break;
+                        }
+                    }
+                    
+                    // If no matches, try searching in specific timestamp columns
+                    if (filteredCount === 0) {
+                        const columns = table.columns();
+                        columns.every(function(index) {
+                            const columnHeader = $(table.column(index).header()).text().toLowerCase();
+                            if (columnHeader.includes('time') || columnHeader.includes('date') || columnHeader.includes('timestamp')) {
+                                table.column(index).search(targetDate, false, false).draw();
+                                filteredCount = table.rows({search: 'applied'}).count();
+                                if (filteredCount > 0) {
+                                    console.log(`Found matches in column: ${columnHeader}`);
+                                    return false; // Break the loop
+                                }
+                            }
+                            return true; // Continue the loop
+                        });
+                    }
+                    
+                    // Update notification
+                    if (filteredCount > 0) {
                         showFilterNotification(`Found ${filteredCount} logs for ${targetDate}`, 'success');
-                        
-                        // Scroll to table
-                        scrollToTable();
                     } else {
-                        console.error('DataTable not found - check initialization');
-                        showFilterNotification('Error: Could not access log table', 'error');
+                        showFilterNotification(`No logs found for ${targetDate}`, 'error');
+                        console.log('Available data sample:', table.rows().data().toArray().slice(0, 3));
                     }
-                }, 1000); // Increased timeout for reliability
-                
-            } catch (error) {
-                console.error('Error in filterLogsByDate:', error);
-                showFilterNotification('Error filtering logs by date', 'error');
-            }
+                    
+                    // Scroll to table
+                    scrollToTable();
+                } else {
+                    console.error('DataTable not found - check initialization');
+                    showFilterNotification('Error: Could not access log table', 'error');
+                }
+            }, 1000); // Increased timeout for reliability
+            
+        } catch (error) {
+            console.error('Error in filterLogsByDate:', error);
+            showFilterNotification('Error filtering logs by date', 'error');
         }
-                
-            } catch (error) {
-                console.error('Error in filterLogsByDate:', error);
-                showFilterNotification('Error filtering logs by date', 'error');
-            }
-        }
+    }
 
-        function filterLogsBySeverity(severityLevel) {
-            try {
-                console.log('Filtering by severity:', severityLevel);
-                showFilterNotification(`Filtering logs for ${severityLevel} level...`);
-                
-                // Switch to logs tab first
-                switchToLogsTab();
-                
-                // Wait for tab to load, then apply filter
-                setTimeout(() => {
-                    // Use the global DataTable instance
-                    const table = window.logsDataTable;
-                    if (table) {
-                        // Clear previous filters
-                        table.search('').columns().search('').draw();
+    function filterLogsBySeverity(severityLevel) {
+        try {
+            console.log('Filtering by severity:', severityLevel);
+            showFilterNotification(`Filtering logs for ${severityLevel} level...`);
+            
+            // Switch to logs tab first
+            switchToLogsTab();
+            
+            // Wait for tab to load, then apply filter
+            setTimeout(() => {
+                // Use the global DataTable instance
+                const table = window.logsDataTable;
+                if (table) {
+                    // Clear previous filters
+                    table.search('').columns().search('').draw();
+                    
+                    // More robust severity filtering - search in specific columns
+                    // First try exact match, then partial match
+                    let searchResults = table.search(severityLevel, false, false).draw();
+                    let filteredCount = table.rows({search: 'applied'}).count();
+                    
+                    // If no exact match, try searching for partial matches (case insensitive)
+                    if (filteredCount === 0) {
+                        // Try with different case variations
+                        const variations = [
+                            severityLevel.toLowerCase(),
+                            severityLevel.toUpperCase(),
+                            severityLevel.charAt(0).toUpperCase() + severityLevel.slice(1).toLowerCase()
+                        ];
                         
-                        // Search for severity level across all columns
-                        table.search(severityLevel, false, false).draw();
-                        
-                        // Update notification
-                        const filteredCount = table.rows({search: 'applied'}).count();
+                        for (let variation of variations) {
+                            table.search(variation, false, false).draw();
+                            filteredCount = table.rows({search: 'applied'}).count();
+                            if (filteredCount > 0) {
+                                console.log(`Found matches with variation: ${variation}`);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If still no matches, try searching in the level/severity column specifically
+                    if (filteredCount === 0) {
+                        // Search column by column for severity-related headers
+                        const columns = table.columns();
+                        columns.every(function(index) {
+                            const columnHeader = $(table.column(index).header()).text().toLowerCase();
+                            if (columnHeader.includes('level') || columnHeader.includes('severity') || columnHeader.includes('priority')) {
+                                table.column(index).search(severityLevel, false, false).draw();
+                                filteredCount = table.rows({search: 'applied'}).count();
+                                if (filteredCount > 0) {
+                                    console.log(`Found matches in column: ${columnHeader}`);
+                                    return false; // Break the loop
+                                }
+                            }
+                            return true; // Continue the loop
+                        });
+                    }
+                    
+                    // Update notification
+                    if (filteredCount > 0) {
                         showFilterNotification(`Found ${filteredCount} ${severityLevel} level logs`, 'success');
-                        
-                        // Scroll to table
-                        scrollToTable();
                     } else {
-                        console.error('DataTable not found - check initialization');
-                        showFilterNotification('Error: Could not access log table', 'error');
+                        showFilterNotification(`No ${severityLevel} level logs found`, 'error');
+                        console.log('Available data sample:', table.rows().data().toArray().slice(0, 3));
                     }
-                }, 1000); // Increased timeout for reliability
-                        
-                        // Scroll to table
-                        scrollToTable();
-                    } else {
-                        console.error('DataTable not found - check initialization');
-                        showFilterNotification('Error: Could not access log table', 'error');
-                    }
-                }, 1000); // Increased timeout for reliability
-                
-            } catch (error) {
-                console.error('Error in filterLogsBySeverity:', error);
-                showFilterNotification('Error filtering logs by severity', 'error');
-            }
+                    
+                    // Scroll to table
+                    scrollToTable();
+                } else {
+                    console.error('DataTable not found - check initialization');
+                    showFilterNotification('Error: Could not access log table', 'error');
+                }
+            }, 1000); // Increased timeout for reliability
+            
+        } catch (error) {
+            console.error('Error in filterLogsBySeverity:', error);
+            showFilterNotification('Error filtering logs by severity', 'error');
         }
+    }
 
-        function switchToLogsTab() {
-            // Find and click the Logs tab
-            const logsTab = document.querySelector('[onclick*="Logs"]');
-            if (logsTab) {
-                logsTab.click();
-            } else {
-                // Fallback - try to find by text content
-                const allTabs = document.querySelectorAll('.tablinks');
-                for (let tab of allTabs) {
-                    if (tab.textContent.includes('Logs') || tab.textContent.includes('All Logs')) {
-                        tab.click();
-                        break;
-                    }
+    function switchToLogsTab() {
+        // Find and click the Logs tab
+        const logsTab = document.querySelector('[onclick*="Logs"]');
+        if (logsTab) {
+            logsTab.click();
+        } else {
+            // Fallback - try to find by text content
+            const allTabs = document.querySelectorAll('.tablinks');
+            for (let tab of allTabs) {
+                if (tab.textContent.includes('Logs') || tab.textContent.includes('All Logs')) {
+                    tab.click();
+                    break;
                 }
             }
         }
+    }
 
-        function scrollToTable() {
-            setTimeout(() => {
-                const tableElement = document.getElementById('logs_table');
-                if (tableElement) {
-                    tableElement.scrollIntoView({ 
+    function scrollToTable() {
+        setTimeout(() => {
+            const tableElement = document.getElementById('logs_table');
+            if (tableElement) {
+                tableElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            } else {
+                // Fallback - try to find the table container
+                const logsDiv = document.getElementById('Logs');
+                if (logsDiv) {
+                    logsDiv.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'start' 
                     });
-                } else {
-                    // Fallback - try to find the table container
-                    const logsDiv = document.getElementById('Logs');
-                    if (logsDiv) {
-                        logsDiv.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start' 
-                        });
-                    }
                 }
-            }, 200);
+            }
+        }, 200);
+    }
+
+    function showFilterNotification(message, type = 'info') {
+        // Create or update notification
+        let notification = document.getElementById('filterNotification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'filterNotification';
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 1000;
+                padding: 12px 20px; border-radius: 5px; 
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                font-weight: 500; transition: opacity 0.3s;
+                max-width: 300px; word-wrap: break-word;
+            `;
+            document.body.appendChild(notification);
+        }
+        
+        // Set colors based on type
+        const colors = {
+            'info': { bg: '#3498db', color: 'white' },
+            'success': { bg: '#27ae60', color: 'white' },
+            'error': { bg: '#e74c3c', color: 'white' },
+            'warning': { bg: '#f39c12', color: 'white' }
+        };
+        
+        const colorConfig = colors[type] || colors.info;
+        notification.style.background = colorConfig.bg;
+        notification.style.color = colorConfig.color;
+        notification.textContent = message;
+        notification.style.opacity = '1';
+        
+        // Auto-hide after 4 seconds for success, 6 seconds for errors
+        const hideDelay = type === 'error' ? 6000 : type === 'success' ? 4000 : 3000;
+        setTimeout(() => {
+            if (notification.style.opacity === '1') {
+                notification.style.opacity = '0';
+            }
+        }, hideDelay);
+    }
+
+    // Export Functions (moved to global scope)
+    function exportToPDF() {
+        showFilterNotification('Preparing PDF export...');
+        window.print(); // Opens browser print dialog which can save as PDF
+    }
+
+    function exportToCSV() {
+        const table = document.getElementById('logs_table');
+        if (!table) {
+            showFilterNotification('No log data available for export');
+            return;
         }
 
-        function showFilterNotification(message, type = 'info') {
-            // Create or update notification
-            let notification = document.getElementById('filterNotification');
-            if (!notification) {
-                notification = document.createElement('div');
-                notification.id = 'filterNotification';
-                notification.style.cssText = `
-                    position: fixed; top: 20px; right: 20px; z-index: 1000;
-                    padding: 12px 20px; border-radius: 5px; 
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                    font-weight: 500; transition: opacity 0.3s;
-                    max-width: 300px; word-wrap: break-word;
-                `;
-                document.body.appendChild(notification);
+        let csv = [];
+        const rows = table.querySelectorAll('tr');
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = [];
+            const cols = rows[i].querySelectorAll('td, th');
+            
+            for (let j = 0; j < cols.length; j++) {
+                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, ' ');
+                data = data.replace(/"/g, '""'); // Escape quotes
+                row.push('"' + data + '"');
             }
-            
-            // Set colors based on type
-            const colors = {
-                'info': { bg: '#3498db', color: 'white' },
-                'success': { bg: '#27ae60', color: 'white' },
-                'error': { bg: '#e74c3c', color: 'white' },
-                'warning': { bg: '#f39c12', color: 'white' }
-            };
-            
-            const colorConfig = colors[type] || colors.info;
-            notification.style.background = colorConfig.bg;
-            notification.style.color = colorConfig.color;
-            notification.textContent = message;
-            notification.style.opacity = '1';
-            
-            // Auto-hide after 4 seconds for success, 6 seconds for errors
-            const hideDelay = type === 'error' ? 6000 : type === 'success' ? 4000 : 3000;
-            setTimeout(() => {
-                if (notification.style.opacity === '1') {
-                    notification.style.opacity = '0';
+            csv.push(row.join(','));
+        }
+
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'rocketchat-analysis-logs.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showFilterNotification('CSV export completed!');
+        }
+    }
+
+    function exportToJSON() {
+        // Get chart data from global scope if available
+        const timelineData = window.timelineData || {};
+        const severityData = window.severityData || {};
+        const logEntries = window.logEntries || [];
+        
+        const analysisData = {
+            timestamp: new Date().toISOString(),
+            summary: {
+                total_logs: logEntries.length,
+                log_level: "{{ log_level_name }}",
+                charts: {
+                    timeline: timelineData,
+                    severity: severityData
                 }
-            }, hideDelay);
-        }
-
-        // Export Functions
-        function exportToPDF() {
-            showFilterNotification('Preparing PDF export...');
-            window.print(); // Opens browser print dialog which can save as PDF
-        }
-
-        function exportToCSV() {
-            const table = document.getElementById('logsTable');
-            if (!table) {
-                showFilterNotification('No log data available for export');
-                return;
+            },
+            logs: logEntries.slice(0, 1000), // Limit for performance
+            metadata: {
+                export_type: 'RocketChat Log Analysis',
+                version: '{{ version }}'
             }
+        };
 
-            let csv = [];
-            const rows = table.querySelectorAll('tr');
-            
-            for (let i = 0; i < rows.length; i++) {
-                const row = [];
-                const cols = rows[i].querySelectorAll('td, th');
-                
-                for (let j = 0; j < cols.length; j++) {
-                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, ' ');
-                    data = data.replace(/"/g, '""'); // Escape quotes
-                    row.push('"' + data + '"');
-                }
-                csv.push(row.join(','));
-            }
-
-            const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'rocketchat-analysis-logs.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showFilterNotification('CSV export completed!');
-            }
+        const jsonString = JSON.stringify(analysisData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'rocketchat-analysis-data.json');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showFilterNotification('JSON export completed!');
         }
+    }
 
-        function exportToJSON() {
-            const analysisData = {
-                timestamp: new Date().toISOString(),
-                summary: {
-                    total_logs: {{ results.logs.total_count | default(0) }},
-                    log_level: "{{ log_level_name }}",
-                    charts: {
-                        timeline: timelineData,
-                        severity: severityData
-                    }
-                },
-                logs: logEntries.slice(0, 1000), // Limit for performance
-                metadata: {
-                    export_type: 'RocketChat Log Analysis',
-                    version: '{{ version }}'
-                }
-            };
-
-            const jsonString = JSON.stringify(analysisData, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
-            const link = document.createElement('a');
-            
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'rocketchat-analysis-data.json');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showFilterNotification('JSON export completed!');
-            }
-        }
-    });
 </script>
 
 </body>
