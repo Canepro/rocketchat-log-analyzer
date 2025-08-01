@@ -50,6 +50,8 @@
 
 ## 🚀 Usage
 
+> **📖 New to the application?** Check out our detailed [Startup Guide](STARTUP_GUIDE.md) for step-by-step instructions and troubleshooting tips!
+
 ### **Using Docker or Podman (Recommended)**
 
 **Note**: The Docker container now uses Python 3.12 Alpine for better security and performance, with production-grade Gunicorn WSGI server. Fully compatible with both Docker and Podman. See [`DOCKER.md`](DOCKER.md) for detailed configuration options.
@@ -93,6 +95,10 @@
    Navigate to [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in your web browser to access the application.
 
 ### **Running Locally with Python**
+
+**Windows Users:** Double-click `start_server.bat` for an easy startup experience with error checking and helpful information.
+
+**All Platforms:**
 
 1. **Start the Server**:
 
