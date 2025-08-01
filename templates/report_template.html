@@ -317,10 +317,14 @@
         const severityData = {{ results.logs.chart_data_severity | tojson }};
         const logEntries = {{ results.logs.content | tojson }};
 
+        // Global chart instances for interaction
+        let timelineChart = null;
+        let severityChart = null;
+
         // Timeline Chart (Line) with Interactive Features
         if (timelineData.labels && timelineData.labels.length > 0) {
             const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
-            const timelineChart = new Chart(ctxTimeline, {
+            timelineChart = new Chart(ctxTimeline, {
                 type: 'line',
                 data: {
                     labels: timelineData.labels,
@@ -331,26 +335,39 @@
                         backgroundColor: 'rgba(54, 162, 235, 0.5)',
                         fill: true,
                         tension: 0.1,
-                        pointRadius: 5,
-                        pointHoverRadius: 8
+                        pointRadius: 6,
+                        pointHoverRadius: 10,
+                        pointBackgroundColor: 'rgb(54, 162, 235)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     interaction: {
                         intersect: false,
                         mode: 'index'
                     },
                     plugins: {
                         tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1,
                             callbacks: {
+                                title: function(context) {
+                                    return `Date: ${context[0].label}`;
+                                },
+                                label: function(context) {
+                                    return `Log entries: ${context.parsed.y}`;
+                                },
                                 afterBody: function(context) {
-                                    const timeLabel = context[0].label;
-                                    const filteredLogs = logEntries.filter(log => {
-                                        const logTime = new Date(log.timestamp).toISOString().split('T')[0];
-                                        return logTime === timeLabel;
-                                    });
-                                    return `Click to filter ${filteredLogs.length} log entries for this date`;
+                                    return [``, `💡 Click to filter logs for this date`];
                                 }
                             }
                         },
@@ -377,6 +394,7 @@
                         if (elements.length > 0) {
                             const clickedElementIndex = elements[0].index;
                             const clickedDate = timelineData.labels[clickedElementIndex];
+                            console.log('Timeline chart clicked:', clickedDate);
                             filterLogsByDate(clickedDate);
                         }
                     },
@@ -399,7 +417,7 @@
             const backgroundColors = severityData.labels.map(label => severityColorMap[label] || 'rgb(150, 150, 150)');
 
             const ctxSeverity = document.getElementById('severityChart').getContext('2d');
-            const severityChart = new Chart(ctxSeverity, {
+            severityChart = new Chart(ctxSeverity, {
                 type: 'doughnut',
                 data: {
                     labels: severityData.labels,
@@ -407,30 +425,51 @@
                         label: 'Severity Breakdown',
                         data: severityData.data,
                         backgroundColor: backgroundColors,
-                        hoverOffset: 4
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        hoverOffset: 8,
+                        hoverBorderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255,255,255,0.3)',
+                            borderWidth: 1,
                             callbacks: {
+                                title: function(context) {
+                                    return `${context[0].label} Level`;
+                                },
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                    return `Count: ${context.parsed} (${percentage}%)`;
+                                },
                                 afterBody: function(context) {
-                                    const severityLevel = context[0].label;
-                                    const count = context[0].parsed;
-                                    return `Click to filter ${count} ${severityLevel} entries`;
+                                    return [``, `💡 Click to filter ${context[0].label} entries`];
                                 }
                             }
                         },
                         legend: {
                             display: true,
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
                         }
                     },
                     onClick: function(event, elements) {
                         if (elements.length > 0) {
                             const clickedElementIndex = elements[0].index;
                             const clickedSeverity = severityData.labels[clickedElementIndex];
+                            console.log('Severity chart clicked:', clickedSeverity);
                             filterLogsBySeverity(clickedSeverity);
                         }
                     },
@@ -443,48 +482,103 @@
 
         // Interactive filtering functions
         function filterLogsByDate(targetDate) {
-            const table = $('#logsTable').DataTable();
-            
-            // Show notification
-            showFilterNotification(`Filtering logs for ${targetDate}`);
-            
-            // Apply date filter - column 1 is the 'time' column
-            table.column(1).search(targetDate).draw();
-            
-            // Switch to logs tab
-            document.getElementById('defaultOpen').click();
-            
-            // Scroll to table
-            setTimeout(() => {
-                const tableElement = document.getElementById('logsTable');
-                if (tableElement) {
-                    tableElement.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 100);
+            try {
+                console.log('Filtering by date:', targetDate);
+                showFilterNotification(`Filtering logs for ${targetDate}...`);
+                
+                // Switch to logs tab first
+                switchToLogsTab();
+                
+                // Wait for tab to load, then apply filter
+                setTimeout(() => {
+                    const table = $('#logsTable').DataTable();
+                    if (table) {
+                        // Clear previous filters and apply date filter
+                        table.search('').columns().search('').draw();
+                        table.column(1).search(targetDate).draw(); // Column 1 is 'time'
+                        
+                        // Update notification
+                        const filteredCount = table.rows({search: 'applied'}).count();
+                        showFilterNotification(`Found ${filteredCount} logs for ${targetDate}`, 'success');
+                        
+                        // Scroll to table
+                        scrollToTable();
+                    } else {
+                        console.error('DataTable not found');
+                        showFilterNotification('Error: Could not access log table', 'error');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error in filterLogsByDate:', error);
+                showFilterNotification('Error filtering logs by date', 'error');
+            }
         }
 
         function filterLogsBySeverity(severityLevel) {
-            const table = $('#logsTable').DataTable();
-            
-            // Show notification
-            showFilterNotification(`Filtering logs for ${severityLevel} level`);
-            
-            // Apply severity filter - column 0 is the 'level' column
-            table.column(0).search(severityLevel).draw();
-            
-            // Switch to logs tab
-            document.getElementById('defaultOpen').click();
-            
-            // Scroll to table
+            try {
+                console.log('Filtering by severity:', severityLevel);
+                showFilterNotification(`Filtering logs for ${severityLevel} level...`);
+                
+                // Switch to logs tab first
+                switchToLogsTab();
+                
+                // Wait for tab to load, then apply filter
+                setTimeout(() => {
+                    const table = $('#logsTable').DataTable();
+                    if (table) {
+                        // Clear previous filters and apply severity filter
+                        table.search('').columns().search('').draw();
+                        table.column(0).search(severityLevel).draw(); // Column 0 is 'level'
+                        
+                        // Update notification
+                        const filteredCount = table.rows({search: 'applied'}).count();
+                        showFilterNotification(`Found ${filteredCount} ${severityLevel} level logs`, 'success');
+                        
+                        // Scroll to table
+                        scrollToTable();
+                    } else {
+                        console.error('DataTable not found');
+                        showFilterNotification('Error: Could not access log table', 'error');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error in filterLogsBySeverity:', error);
+                showFilterNotification('Error filtering logs by severity', 'error');
+            }
+        }
+
+        function switchToLogsTab() {
+            // Find and click the Logs tab
+            const logsTab = document.querySelector('[onclick*="Logs"]');
+            if (logsTab) {
+                logsTab.click();
+            } else {
+                // Fallback - try to find by text content
+                const allTabs = document.querySelectorAll('.tablinks');
+                for (let tab of allTabs) {
+                    if (tab.textContent.includes('Logs') || tab.textContent.includes('All Logs')) {
+                        tab.click();
+                        break;
+                    }
+                }
+            }
+        }
+
+        function scrollToTable() {
             setTimeout(() => {
                 const tableElement = document.getElementById('logsTable');
                 if (tableElement) {
-                    tableElement.scrollIntoView({ behavior: 'smooth' });
+                    tableElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
                 }
-            }, 100);
+            }, 200);
         }
 
-        function showFilterNotification(message) {
+        function showFilterNotification(message, type = 'info') {
             // Create or update notification
             let notification = document.getElementById('filterNotification');
             if (!notification) {
@@ -492,20 +586,35 @@
                 notification.id = 'filterNotification';
                 notification.style.cssText = `
                     position: fixed; top: 20px; right: 20px; z-index: 1000;
-                    background: #3498db; color: white; padding: 12px 20px;
-                    border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    padding: 12px 20px; border-radius: 5px; 
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
                     font-weight: 500; transition: opacity 0.3s;
+                    max-width: 300px; word-wrap: break-word;
                 `;
                 document.body.appendChild(notification);
             }
             
+            // Set colors based on type
+            const colors = {
+                'info': { bg: '#3498db', color: 'white' },
+                'success': { bg: '#27ae60', color: 'white' },
+                'error': { bg: '#e74c3c', color: 'white' },
+                'warning': { bg: '#f39c12', color: 'white' }
+            };
+            
+            const colorConfig = colors[type] || colors.info;
+            notification.style.background = colorConfig.bg;
+            notification.style.color = colorConfig.color;
             notification.textContent = message;
             notification.style.opacity = '1';
             
-            // Auto-hide after 3 seconds
+            // Auto-hide after 4 seconds for success, 6 seconds for errors
+            const hideDelay = type === 'error' ? 6000 : type === 'success' ? 4000 : 3000;
             setTimeout(() => {
-                notification.style.opacity = '0';
-            }, 3000);
+                if (notification.style.opacity === '1') {
+                    notification.style.opacity = '0';
+                }
+            }, hideDelay);
         }
 
         // Export Functions
