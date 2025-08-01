@@ -48,6 +48,15 @@
         .recommendation-entry p { margin: 10px 0 5px; }
         .recommendation-entry ul, .recommendation-entry ol { margin-top: 0; padding-left: 20px; }
         .recommendation-entry a { color: #3498db; text-decoration: none; }
+        .export-buttons { display: flex; gap: 10px; }
+        .export-btn {
+            background: #3498db; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .export-btn:hover { background: #2980b9; }
+        .chart-hint { font-size: 12px; color: #666; margin: 5px 0; font-style: italic; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .recommendation-entry a:hover { text-decoration: underline; }
         footer {
             text-align: center; margin-top: 30px; padding-top: 15px;
@@ -77,14 +86,29 @@
     </div>
     
     <div id="Dashboard" class="tabcontent">
-        <h2>Analysis Dashboard</h2>
+        <div class="dashboard-header">
+            <h2>Analysis Dashboard</h2>
+            <div class="export-buttons">
+                <button onclick="exportToPDF()" class="export-btn" title="Export analysis report as PDF">
+                    📄 Export PDF
+                </button>
+                <button onclick="exportToCSV()" class="export-btn" title="Export log data as CSV">
+                    📊 Export CSV
+                </button>
+                <button onclick="exportToJSON()" class="export-btn" title="Export complete analysis as JSON">
+                    📋 Export JSON
+                </button>
+            </div>
+        </div>
         <div class="dashboard-grid">
             <div class="chart-container">
                 <h3>Log Entries Over Time</h3>
+                <p class="chart-hint">Click on data points to filter logs by date</p>
                 <canvas id="timelineChart"></canvas>
             </div>
             <div class="chart-container">
                 <h3>Log Severity Breakdown</h3>
+                <p class="chart-hint">Click on segments to filter logs by severity level</p>
                 <canvas id="severityChart"></canvas>
             </div>
         </div>
@@ -291,11 +315,12 @@
         // --- Chart.js Initialization ---
         const timelineData = {{ results.logs.chart_data_timeline | tojson }};
         const severityData = {{ results.logs.chart_data_severity | tojson }};
+        const logEntries = {{ results.logs.entries | tojson }};
 
-        // Timeline Chart (Line)
+        // Timeline Chart (Line) with Interactive Features
         if (timelineData.labels && timelineData.labels.length > 0) {
             const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
-            new Chart(ctxTimeline, {
+            const timelineChart = new Chart(ctxTimeline, {
                 type: 'line',
                 data: {
                     labels: timelineData.labels,
@@ -305,13 +330,64 @@
                         borderColor: 'rgb(54, 162, 235)',
                         backgroundColor: 'rgba(54, 162, 235, 0.5)',
                         fill: true,
-                        tension: 0.1
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
                     }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const timeLabel = context[0].label;
+                                    const filteredLogs = logEntries.filter(log => {
+                                        const logTime = new Date(log.timestamp).toISOString().split('T')[0];
+                                        return logTime === timeLabel;
+                                    });
+                                    return `Click to filter ${filteredLogs.length} log entries for this date`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Log Entries'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    },
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            const clickedElementIndex = elements[0].index;
+                            const clickedDate = timelineData.labels[clickedElementIndex];
+                            filterLogsByDate(clickedDate);
+                        }
+                    },
+                    onHover: function(event, elements) {
+                        event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
                 }
             });
         }
 
-        // Severity Breakdown Chart (Doughnut)
+        // Severity Breakdown Chart (Doughnut) with Interactive Features
         if (severityData.labels && severityData.labels.length > 0) {
             const severityColorMap = {
                 'CRITICAL': 'rgb(217, 30, 24)',  // Strong Red
@@ -323,7 +399,7 @@
             const backgroundColors = severityData.labels.map(label => severityColorMap[label] || 'rgb(150, 150, 150)');
 
             const ctxSeverity = document.getElementById('severityChart').getContext('2d');
-            new Chart(ctxSeverity, {
+            const severityChart = new Chart(ctxSeverity, {
                 type: 'doughnut',
                 data: {
                     labels: severityData.labels,
@@ -331,9 +407,173 @@
                         label: 'Severity Breakdown',
                         data: severityData.data,
                         backgroundColor: backgroundColors,
+                        hoverOffset: 4
                     }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const severityLevel = context[0].label;
+                                    const count = context[0].parsed;
+                                    return `Click to filter ${count} ${severityLevel} entries`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    },
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            const clickedElementIndex = elements[0].index;
+                            const clickedSeverity = severityData.labels[clickedElementIndex];
+                            filterLogsBySeverity(clickedSeverity);
+                        }
+                    },
+                    onHover: function(event, elements) {
+                        event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
                 }
             });
+        }
+
+        // Interactive filtering functions
+        function filterLogsByDate(targetDate) {
+            const table = $('#logsTable').DataTable();
+            
+            // Show notification
+            showFilterNotification(`Filtering logs for ${targetDate}`);
+            
+            // Apply date filter
+            table.column(0).search(targetDate).draw();
+            
+            // Switch to logs tab
+            document.getElementById('defaultOpen').click();
+            
+            // Scroll to table
+            document.getElementById('logsTable').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function filterLogsBySeverity(severityLevel) {
+            const table = $('#logsTable').DataTable();
+            
+            // Show notification
+            showFilterNotification(`Filtering logs for ${severityLevel} level`);
+            
+            // Apply severity filter
+            table.column(1).search(severityLevel).draw();
+            
+            // Switch to logs tab
+            document.getElementById('defaultOpen').click();
+            
+            // Scroll to table
+            document.getElementById('logsTable').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showFilterNotification(message) {
+            // Create or update notification
+            let notification = document.getElementById('filterNotification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'filterNotification';
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    background: #3498db; color: white; padding: 12px 20px;
+                    border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    font-weight: 500; transition: opacity 0.3s;
+                `;
+                document.body.appendChild(notification);
+            }
+            
+            notification.textContent = message;
+            notification.style.opacity = '1';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+            }, 3000);
+        }
+
+        // Export Functions
+        function exportToPDF() {
+            showFilterNotification('Preparing PDF export...');
+            window.print(); // Opens browser print dialog which can save as PDF
+        }
+
+        function exportToCSV() {
+            const table = document.getElementById('logsTable');
+            if (!table) {
+                showFilterNotification('No log data available for export');
+                return;
+            }
+
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [];
+                const cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, ' ');
+                    data = data.replace(/"/g, '""'); // Escape quotes
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(','));
+            }
+
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'rocketchat-analysis-logs.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showFilterNotification('CSV export completed!');
+            }
+        }
+
+        function exportToJSON() {
+            const analysisData = {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    total_logs: {{ results.summary.data | length }},
+                    log_level: "{{ log_level_name }}",
+                    charts: {
+                        timeline: timelineData,
+                        severity: severityData
+                    }
+                },
+                logs: logEntries.slice(0, 1000), // Limit for performance
+                metadata: {
+                    export_type: 'RocketChat Log Analysis',
+                    version: '2.1.2'
+                }
+            };
+
+            const jsonString = JSON.stringify(analysisData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'rocketchat-analysis-data.json');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showFilterNotification('JSON export completed!');
+            }
         }
     });
 </script>
