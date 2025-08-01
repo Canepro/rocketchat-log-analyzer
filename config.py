@@ -14,7 +14,7 @@ class Config:
     MAX_SINGLE_FILE_SIZE = int(os.environ.get('MAX_SINGLE_FILE_SIZE', 50 * 1024 * 1024))  # 50 MB default
     
     # Application Settings
-    VERSION = "2.1.3"
+    VERSION = "2.1.4"
     UPLOAD_FOLDER = Path(os.environ.get('UPLOAD_FOLDER', 'temp'))
     REPORTS_FOLDER = Path(os.environ.get('REPORTS_FOLDER', 'reports'))
     
