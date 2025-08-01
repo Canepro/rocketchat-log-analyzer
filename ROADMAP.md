@@ -125,15 +125,16 @@ This roadmap outlines the planned evolution of the RocketChat Log Analyzer tool.
 
 ## 📋 **Immediate Action Plan (August 2025)**
 
-### 1. **🔥 Merge & Release (THIS WEEK)**
+### 1. **🔥 Merge & Release (THIS WEEK)** ✅
 
-- [ ] Create PR from `security-improvements` to `main`
-- [ ] Review and merge security improvements
-- [ ] Tag release v2.1.2
-- [ ] Update GitHub release with changelog
+- [x] Create PR from `security-improvements` to `main`
+- [x] Review and merge security improvements
+- [x] Tag release v2.1.2
+- [x] Update GitHub release with changelog
+- [x] Verify Podman/Docker compatibility ✅
 - [ ] Update Docker Hub with new images
 
-### 2. **🚀 CI/CD Setup (NEXT 2 WEEKS)**
+### 2. **🚀 CI/CD Setup (NEXT 2 WEEKS)** 🔄
 
 - [ ] Activate GitHub Actions workflows
 - [ ] Set up automated testing on PR/push
