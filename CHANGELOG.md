@@ -6,6 +6,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.1.2] - 2025-08-01 (Security & Quality Release)
+
+### 🔒 Security
+- **Externalized SECRET_KEY**: Removed hardcoded secret key, now uses environment variables or secure random generation
+- **ZIP File Validation**: Added comprehensive validation including size limits and zip bomb protection
+- **Input Sanitization**: Enhanced filename sanitization and path traversal protection
+- **Safe Extraction**: Implemented secure ZIP extraction with size limits per file
+
+### 🏗️ Architecture & Code Quality
+- **Configuration Management**: Extracted all configuration to `config.py` with environment-based configs
+- **Code Deduplication**: Created `utils.py` module to eliminate code duplication
+- **Type Safety**: Enhanced type hints throughout the codebase
+- **Error Handling**: Improved error handling with custom exception classes
+
+### 📦 Dependencies & Build
+
+- **Pinned Dependencies**: Added version constraints to `requirements.txt` for security and stability
+- **Environment Configuration**: Added `.env.example` for easy environment setup
+- **CI/CD Pipeline**: Added GitHub Actions workflow with testing, security scanning, and Docker builds
+- **Production WSGI**: Added Gunicorn for production-grade web server deployment
+
+### 🐳 Docker & Containerization
+
+- **Alpine Base Image**: Migrated from `python:3.11-slim` to `python:3.12-alpine` for smaller size and better security
+- **Docker/Podman Compatibility**: Fully tested and compatible with both Docker and Podman container engines
+- **Security Hardening**: Non-root user, system updates, minimal attack surface
+- **Production Ready**: Gunicorn WSGI server instead of Flask development server
+- **Health Checks**: Built-in Docker health monitoring and startup detection (Docker format)
+- **Resource Management**: Configurable limits and proper temporary directory handling
+- **Environment Configuration**: Comprehensive environment variable support
+- **.dockerignore**: Optimized Docker build context for faster builds
+
+### 🧪 Testing & Quality Assurance
+- **Unit Tests**: Added basic test suite with pytest
+- **Security Scanning**: Integrated bandit for security analysis and safety for dependency vulnerabilities
+- **Code Formatting**: Added black for consistent code formatting
+- **Linting**: Added flake8 for code quality checks
+
+### 📚 Documentation
+- **Project Roadmap**: Created comprehensive `ROADMAP.md` with future development plans
+- **Updated README**: Enhanced README with current development status and roadmap reference
+
+---
+
 ## [2.1.1] - In Development
 
 ### Added

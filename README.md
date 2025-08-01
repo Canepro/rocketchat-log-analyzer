@@ -1,6 +1,6 @@
 # 🚀 Rocket.Chat Support Dump Analyzer
 
-**Current Version:** v2.1.0
+**Current Version:** v2.1.2
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
@@ -51,7 +51,9 @@
 
 ## 🚀 Usage
 
-### **Using Docker or Podman (Easiest Method)**
+### **Using Docker or Podman (Recommended)**
+
+**Note**: The Docker container now uses Python 3.12 Alpine for better security and performance, with production-grade Gunicorn WSGI server. Fully compatible with both Docker and Podman. See [`DOCKER.md`](DOCKER.md) for detailed configuration options.
 
 1. **Build the Container Image**:
    *For Docker:*
@@ -67,16 +69,25 @@
    ```
 
 2. **Run the Container**:
-   *For Docker:*
+   *For Docker (Development):*
 
    ```bash
-   docker run -p 5000:5000 rocketchat-analyzer
+   docker run -p 5000:5000 -e FLASK_ENV=development rocketchat-analyzer
    ```
 
-   *For Podman:*
+   *For Docker (Production):*
 
    ```bash
-   podman run -p 5000:5000 rocketchat-analyzer
+   docker run -p 5000:5000 \
+     -e SECRET_KEY=your-secure-secret-key \
+     -e FLASK_ENV=production \
+     rocketchat-analyzer
+   ```
+
+   *For Podman (works with same commands):*
+
+   ```bash
+   podman run -p 5000:5000 -e SECRET_KEY=your-secure-secret-key rocketchat-analyzer
    ```
 
 3. **Open in Browser**:
@@ -97,23 +108,16 @@
 
 ## 🗸️ Project Roadmap
 
-This roadmap outlines the planned evolution of the tool. For a detailed history of changes, see `CHANGELOG.md`.
+For a comprehensive roadmap including future features and development plans, see [`ROADMAP.md`](ROADMAP.md). For detailed change history, see `CHANGELOG.md`.
 
-* **Version 3.0.0: The "Pro" Release (Future)**
+### 🚧 **Currently in Development (v2.1.2)**
 
-  * [ ] **Configuration Analyzer**: Implement a module to check for common misconfigurations and provide proactive advice.
+* **Security Hardening**: Externalizing SECRET_KEY, adding input validation, ZIP bomb protection
+* **Code Quality**: Comprehensive testing, dependency management, architecture improvements
+* **CI/CD Pipeline**: Automated testing and security scanning
+* **Docker Improvements**: Production-ready Dockerfile with Gunicorn, security hardening, health checks
 
-* **Version 2.2.0: The "Hardening" Release (Planned)**
-
-  * [ ] **Security Hardening**: Implement suggestions from code reviews (e.g., externalize `SECRET_KEY`).
-  * [ ] **Performance Optimization**: Refactor the log analyzer to stream large files more efficiently.
-  * [ ] **Code Quality**: Add a basic suite of unit tests.
-
-* **Version 2.1.1: Interactive Dashboard (Next Up)**
-
-  * [ ] **Priority 1**: Implement click-to-filter and hover-to-preview functionality on the timeline chart.
-
-* **Version 2.1.0: The "Dashboard & Visualization" Release (✅ Current)**
+### ✅ **Version 2.1.0: The "Dashboard & Visualization" Release (Current)**
 
   * ✅ **Visual Dashboard**: Added a new "Dashboard" tab with Chart.js visualizations.
   * ✅ **Docker Support**: Added a `Dockerfile` for easy, containerized deployment.
