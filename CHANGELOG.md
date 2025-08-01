@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Added proper resize handling with debouncing
   - Added CSS constraints to prevent chart container overflow
   - Enhanced tab switching with proper chart resize management
+- **Chart Click Filtering**: Fixed chart click-to-filter functionality not properly filtering logs
+  - Corrected table ID mismatch (`logsTable` vs `logs_table`)
+  - Enhanced date filtering with regex search for better timestamp matching
+  - Added severity level mapping for both text and numeric log levels
+  - Improved error handling and fallback mechanisms
 
 ---
 
