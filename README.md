@@ -1,6 +1,6 @@
 # 🚀 Rocket.Chat Support Dump Analyzer
 
-**Current Version:** v2.1.3
+**Current Version:** v2.1.4
 
 [![License: MIT](https://img---
 
@@ -140,7 +140,14 @@ rocketchat-log-analyzer/
 
 For a comprehensive roadmap including future features and development plans, see [`ROADMAP.md`](ROADMAP.md). For detailed change history, see `CHANGELOG.md`.
 
-### ✅ **Version 2.1.3: The "Interactive Experience" Release (Current)**
+### ✅ **Version 2.1.4: The "Chart Filtering Fix" Release (Current)**
+
+* ✅ **Bug Fixes**: Fixed broken chart click-to-filter functionality that was showing "0 found" results
+* ✅ **DataTable Integration**: Resolved reference mismatches and improved search compatibility
+* ✅ **Reliability**: Enhanced timeout handling and race condition prevention
+* ✅ **User Experience**: Seamless chart-to-table filtering now works correctly
+
+### ✅ **Version 2.1.3: The "Interactive Experience" Release**
 
 * ✅ **Interactive Dashboard**: Click-to-filter charts with real-time log filtering
 * ✅ **Enhanced UX**: Hover tooltips, smooth animations, export features (PDF/CSV/JSON)

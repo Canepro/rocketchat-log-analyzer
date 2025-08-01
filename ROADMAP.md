@@ -2,6 +2,24 @@
 
 This roadmap outlines the planned evolution of the RocketChat Log Analyzer tool. For a detailed history of changes, see `CHANGELOG.md`.
 
+## 🎉 **Version 2.1.4: Chart Filtering Bug Fix (COMPLETED - August 2025)**
+
+### 🐛 Critical Bug Fixes ✅
+
+- [x] **Chart Click-to-Filter Bug**: Fixed broken chart filtering functionality that was showing "0 found" results
+- [x] **DataTable Reference Mismatch**: Resolved inconsistent table references between initialization and filtering
+- [x] **Search Compatibility**: Switched from column-specific to global search for better reliability
+- [x] **Race Condition Prevention**: Added proper async handling and increased timeouts
+- [x] **Date Format Compatibility**: Improved date filtering and search functionality
+
+### 🔧 Technical Improvements ✅
+
+- [x] **Global DataTable Management**: Implemented consistent DataTable instance handling
+- [x] **Enhanced Error Handling**: Better timeout and error handling for interactive features
+- [x] **Code Quality**: Clean commit history with proper GitHub issue tracking workflow
+
+---
+
 ## 🎉 **Version 2.1.3: Interactive Experience Release (COMPLETED - August 2025)**
 
 ### 🎯 Interactive Dashboard Features ✅
