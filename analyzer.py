@@ -5,14 +5,11 @@ import re
 from collections import defaultdict
 from pathlib import Path
 from datetime import datetime
+from utils import LOG_LEVEL_NAMES
 
 # Construct an absolute path to the knowledge base to ensure it's always found.
 BASE_DIR = Path(__file__).resolve().parent
 KNOWLEDGE_BASE_PATH = BASE_DIR / 'knowledge_base.json'
-
-LOG_LEVEL_NAMES = {
-    10: 'DEBUG', 20: 'INFO', 30: 'WARNING', 40: 'ERROR', 50: 'CRITICAL'
-}
 
 def _format_value(value):
     """Formats a setting's value into a string, handling dicts/lists."""
