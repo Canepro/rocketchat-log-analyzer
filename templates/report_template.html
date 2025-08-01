@@ -527,11 +527,14 @@
                 
                 // Wait for tab to load, then apply filter
                 setTimeout(() => {
-                    const table = $('#logsTable').DataTable();
+                    const table = $('#logs_table').DataTable();
                     if (table) {
                         // Clear previous filters and apply date filter
                         table.search('').columns().search('').draw();
-                        table.column(1).search(targetDate).draw(); // Column 1 is 'time'
+                        
+                        // Convert HH:MM format to match log timestamps
+                        // The targetDate is in HH:MM format from chart, need to match against full timestamp
+                        table.column(1).search(targetDate, true, false).draw(); // Column 1 is 'time', use regex search
                         
                         // Update notification
                         const filteredCount = table.rows({search: 'applied'}).count();
@@ -540,7 +543,7 @@
                         // Scroll to table
                         scrollToTable();
                     } else {
-                        console.error('DataTable not found');
+                        console.error('DataTable not found - using correct ID: logs_table');
                         showFilterNotification('Error: Could not access log table', 'error');
                     }
                 }, 500);
@@ -561,11 +564,28 @@
                 
                 // Wait for tab to load, then apply filter
                 setTimeout(() => {
-                    const table = $('#logsTable').DataTable();
+                    const table = $('#logs_table').DataTable();
                     if (table) {
                         // Clear previous filters and apply severity filter
                         table.search('').columns().search('').draw();
-                        table.column(0).search(severityLevel).draw(); // Column 0 is 'level'
+                        
+                        // Convert severity names to match log levels
+                        let searchTerm = severityLevel;
+                        const severityMap = {
+                            'CRITICAL': '50',
+                            'ERROR': '40', 
+                            'WARNING': '30',
+                            'INFO': '20',
+                            'DEBUG': '10'
+                        };
+                        
+                        // Try both name and numeric level
+                        const numericLevel = severityMap[severityLevel];
+                        if (numericLevel) {
+                            searchTerm = `${severityLevel}|${numericLevel}`;
+                        }
+                        
+                        table.column(0).search(searchTerm, true, false).draw(); // Column 0 is 'level', use regex search
                         
                         // Update notification
                         const filteredCount = table.rows({search: 'applied'}).count();
@@ -574,7 +594,7 @@
                         // Scroll to table
                         scrollToTable();
                     } else {
-                        console.error('DataTable not found');
+                        console.error('DataTable not found - using correct ID: logs_table');
                         showFilterNotification('Error: Could not access log table', 'error');
                     }
                 }, 500);
@@ -604,12 +624,21 @@
 
         function scrollToTable() {
             setTimeout(() => {
-                const tableElement = document.getElementById('logsTable');
+                const tableElement = document.getElementById('logs_table');
                 if (tableElement) {
                     tableElement.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'start' 
                     });
+                } else {
+                    // Fallback - try to find the table container
+                    const logsDiv = document.getElementById('Logs');
+                    if (logsDiv) {
+                        logsDiv.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }
                 }
             }, 200);
         }
