@@ -26,6 +26,18 @@ def create_app(config_name=None):
     
     setup_logging()
     
+    # Disable template caching in development
+    if app.config['DEBUG']:
+        app.jinja_env.auto_reload = True
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
+        
+        @app.after_request
+        def after_request(response):
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
+    
     # Register routes
     register_routes(app)
     
