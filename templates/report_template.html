@@ -326,6 +326,23 @@
     document.getElementById("defaultOpen").click();
 
     $(document).ready(function() {
+        // Initialize all DataTables
+        $('#summary_table').DataTable({
+            "pageLength": 25
+        });
+        $('#statistics_table').DataTable({
+            "pageLength": 25
+        });
+        $('#settings_table').DataTable({
+            "pageLength": 25
+        });
+        $('#omnichannel_table').DataTable({
+            "pageLength": 25
+        });
+        $('#apps_table').DataTable({
+            "pageLength": 25
+        });
+        
         // Store DataTable instance globally for filtering operations
         window.logsDataTable = $('#logs_table').DataTable({
             "pageLength": 25
@@ -555,12 +572,6 @@
                 showFilterNotification('Error filtering logs by date', 'error');
             }
         }
-                
-            } catch (error) {
-                console.error('Error in filterLogsByDate:', error);
-                showFilterNotification('Error filtering logs by date', 'error');
-            }
-        }
 
         function filterLogsBySeverity(severityLevel) {
             try {
@@ -584,14 +595,6 @@
                         // Update notification
                         const filteredCount = table.rows({search: 'applied'}).count();
                         showFilterNotification(`Found ${filteredCount} ${severityLevel} level logs`, 'success');
-                        
-                        // Scroll to table
-                        scrollToTable();
-                    } else {
-                        console.error('DataTable not found - check initialization');
-                        showFilterNotification('Error: Could not access log table', 'error');
-                    }
-                }, 1000); // Increased timeout for reliability
                         
                         // Scroll to table
                         scrollToTable();
