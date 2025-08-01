@@ -1,0 +1,20 @@
+2025-08-01T10:00:00.000Z I SERVER_STARTUP RocketChat server starting up
+2025-08-01T10:00:01.000Z W CONFIG_WARNING Configuration file not found, using defaults
+2025-08-01T10:00:02.000Z I DATABASE_CONNECT Connected to MongoDB successfully
+2025-08-01T10:00:03.000Z E DATABASE_ERROR Failed to initialize user collection
+2025-08-01T10:00:04.000Z W AUTH_WARNING Authentication service degraded
+2025-08-01T10:00:05.000Z I USER_LOGIN User admin logged in successfully
+2025-08-01T10:00:06.000Z E FILE_UPLOAD File upload service failed - disk space low
+2025-08-01T10:00:07.000Z C CRITICAL_ERROR Database connection lost - retrying
+2025-08-01T10:00:08.000Z I RETRY_SUCCESS Database connection restored
+2025-08-01T10:00:09.000Z W MEMORY_WARNING Memory usage at 85%
+2025-08-01T10:00:10.000Z I HEARTBEAT Server heartbeat - all services operational
+2025-08-01T10:00:11.000Z E API_ERROR REST API endpoint /api/v1/chat failed
+2025-08-01T10:00:12.000Z W RATE_LIMIT Rate limit exceeded for user 12345
+2025-08-01T10:00:13.000Z I BACKUP_START Automated backup initiated
+2025-08-01T10:00:14.000Z E BACKUP_FAILED Backup failed - insufficient storage
+2025-08-01T10:00:15.000Z C DISK_FULL Critical: Disk space exhausted
+2025-08-01T11:00:00.000Z I CLEANUP_START Log cleanup process started
+2025-08-01T11:00:01.000Z W CLEANUP_WARNING Some logs could not be archived
+2025-08-01T11:00:02.000Z E CLEANUP_ERROR Failed to compress old logs
+2025-08-01T11:00:03.000Z I MAINTENANCE_MODE Server entering maintenance mode

@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.1.3] - 2025-08-01 (User Experience Enhancement)
+
+### 🎯 Interactive Dashboard Features
+- **Click-to-Filter Charts**: Timeline and severity charts now support click-to-filter functionality
+- **Enhanced Hover Tooltips**: Improved hover-to-preview with filtering hints and data insights
+- **Smart Tab Switching**: Automatic navigation to logs tab when filtering
+- **Visual Feedback**: Enhanced cursor changes, hover effects, and notification system
+- **Export Features**: Added PDF, CSV, and JSON export buttons to dashboard
+
+### 🔧 Reliability Improvements
+- **Error Handling**: Comprehensive try-catch blocks for all interactive features
+- **DataTable Integration**: Robust timing and initialization for table filtering
+- **Console Logging**: Added debugging support for chart interactions
+- **Fallback Mechanisms**: Multiple fallback options for tab switching and element detection
+- **Notification System**: Multi-type notification system (info, success, error, warning)
+
+### 🎨 User Experience
+- **Better Visual Design**: Larger interactive areas, improved hover states
+- **Clear Feedback**: Real-time filtering results and status messages
+- **Smooth Transitions**: Animated scrolling and tab switching
+- **Accessibility**: Improved keyboard and screen reader support
+
+---
+
 ## [2.1.2] - 2025-08-01 (Security & Quality Release)
 
 ### 🔒 Security

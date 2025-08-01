@@ -39,7 +39,13 @@
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; word-break: break-all; }
         th { background-color: #f8f9fa; font-weight: 600; }
         .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px; }
-        .chart-container { padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .chart-container { 
+            padding: 20px; border: 1px solid #ddd; border-radius: 8px; 
+            min-height: 300px; max-height: 500px; overflow: hidden; position: relative;
+        }
+        .chart-container canvas {
+            max-width: 100% !important; max-height: 400px !important;
+        }
         .recommendation-entry {
             border-left: 4px solid #3498db; padding: 15px; margin-bottom: 20px;
             background-color: #f8f9fa; border-radius: 4px;
@@ -303,6 +309,18 @@
         }
         document.getElementById(tabName).style.display = "block";
         evt.currentTarget.className += " active";
+        
+        // Resize charts when switching to Dashboard tab to prevent stretching
+        if (tabName === 'Dashboard') {
+            setTimeout(() => {
+                if (timelineChart) {
+                    timelineChart.resize();
+                }
+                if (severityChart) {
+                    severityChart.resize();
+                }
+            }, 100);
+        }
     }
 
     document.getElementById("defaultOpen").click();
@@ -344,7 +362,9 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    resizeDelay: 100,
                     interaction: {
                         intersect: false,
                         mode: 'index'
@@ -433,7 +453,9 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    resizeDelay: 100,
                     plugins: {
                         tooltip: {
                             enabled: true,
@@ -479,6 +501,20 @@
                 }
             });
         }
+
+        // Add window resize handler to prevent infinite chart stretching
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (timelineChart && document.getElementById('Dashboard').style.display !== 'none') {
+                    timelineChart.resize();
+                }
+                if (severityChart && document.getElementById('Dashboard').style.display !== 'none') {
+                    severityChart.resize();
+                }
+            }, 250);
+        });
 
         // Interactive filtering functions
         function filterLogsByDate(targetDate) {
