@@ -92,7 +92,18 @@ This roadmap outlines the planned evolution of the RocketChat Log Analyzer tool.
 
 ---
 
-## 🚀 **NEXT: Version 2.2.0: Performance & Advanced Analysis Release (Target: September 2025)**
+## 🚀 **NEXT: Version 2.2.0: Modern UI/UX & Performance Release (Target: September 2025)**
+
+### 🎨 **HIGH PRIORITY - UI/UX Modernization**
+
+- [ ] **Modern Design System**: Implement contemporary design language with improved color scheme, typography, and spacing
+- [ ] **Responsive Layout**: Mobile-first design with improved tablet and mobile experience
+- [ ] **Dark/Light Theme**: User-selectable theme options with system preference detection
+- [ ] **Accessibility Improvements**: WCAG 2.1 AA compliance with keyboard navigation and screen reader support
+- [ ] **Component Library**: Standardized UI components for consistency across the application
+- [ ] **Animation & Transitions**: Smooth micro-interactions and loading states for better user experience
+- [ ] **Modern Icons**: Updated icon set with consistent styling and better visual hierarchy
+- [ ] **Improved Navigation**: Enhanced tab system with breadcrumbs and better visual indicators
 
 ### ⚡ **HIGH PRIORITY - Performance Optimization**
 
@@ -117,6 +128,7 @@ This roadmap outlines the planned evolution of the RocketChat Log Analyzer tool.
 - [ ] **Custom Filters**: User-defined date ranges, severity combinations, and custom searches
 - [ ] **Bookmarking**: Save and share specific analysis views and filter combinations
 - [ ] **Analysis History**: Track and compare multiple analysis sessions
+- [ ] **Drag-and-Drop Enhancement**: Improved file upload experience with better visual feedback
 
 ### 🔧 **MEDIUM PRIORITY - Operational Excellence**
 
@@ -230,5 +242,5 @@ This roadmap outlines the planned evolution of the RocketChat Log Analyzer tool.
 ---
 
 *Last Updated: August 1, 2025*  
-*Current Version: v2.1.3*  
-*Next Release Target: v2.2.0 (Performance & Advanced Analysis - September 2025)*
+*Current Version: v2.1.4*  
+*Next Release Target: v2.2.0 (Modern UI/UX & Performance - September 2025)*
