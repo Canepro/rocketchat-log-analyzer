@@ -1,27 +1,26 @@
 # 🚀 Rocket.Chat Support Dump Analyzer
 
-**Current Version:** v2.1.2
+**Current Version:** v2.1.3
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img---
+
+## 📁 Project Structure
+
+```textlds.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Latest Release](https://img.shields.io/github/v/release/Canepro/rocketchat-log-analyzer?label=Latest%20Release\&color=brightgreen)](https://github.com/Canepro/rocketchat-log-analyzer/releases)
 
 ---
 
-## 📊 Analyzer Dashboard Preview
-
-![Screenshot of the Analyzer's Dashboard](https://github.com/Canepro/rocketchat-log-analyzer/blob/main/Screenshot_3.png?raw=true)
-
-> Example view of the Rocket.Chat log analyzer dashboard in version 2.1.0
-
-
 ## ✨ Key Features
 
-* **Visual Dashboard**: Instantly identify trends with charts for log entries over time and severity breakdowns.
-* **Easy-to-use Web App**: A simple drag-and-drop interface for fast analysis.
-* **Actionable Recommendations**: Get detailed solutions for common errors from an expanded knowledge base.
-* **Docker & Podman Support**: Run the application in a containerized environment for maximum compatibility.
-* **Secure Redaction**: Automatically redacts sensitive keywords like "password" or "token."
+* **🎯 Interactive Dashboard**: Click-to-filter charts for log entries over time and severity breakdowns with real-time filtering
+* **🎨 Enhanced User Experience**: Hover tooltips, smooth animations, and comprehensive export options (PDF/CSV/JSON)
+* **🔧 Reliable & Secure**: Comprehensive error handling, input validation, and secure file processing
+* **🌐 Easy-to-use Web App**: Modern drag-and-drop interface with professional styling
+* **📚 Actionable Recommendations**: Get detailed solutions for common errors from an expanded knowledge base
+* **🐳 Container Ready**: Full Docker & Podman support with Alpine-based production builds
+* **🔒 Security Focused**: Automatic redaction of sensitive data, ZIP bomb protection, and secure extraction
 
 ---
 
@@ -106,24 +105,54 @@
 
 ---
 
-## 🗸️ Project Roadmap
+## � Project Structure
+
+```
+rocketchat-log-analyzer/
+├── app.py                    # Main Flask application
+├── analyzer.py              # Core log analysis logic
+├── config.py                # Configuration management
+├── utils.py                  # Utility functions and security helpers
+├── main.py                   # CLI interface (legacy)
+├── requirements.txt          # Python dependencies
+├── Dockerfile               # Container build configuration
+├── gunicorn.conf.py         # Production WSGI server config
+├── templates/               # HTML templates
+│   ├── upload.html         # File upload interface
+│   └── report_template.html # Interactive analysis dashboard
+├── reports/                 # Generated analysis reports
+├── tests/                   # Test suite
+│   ├── test_basic.py       # Core functionality tests
+│   └── test_support_dump.zip # Test data
+├── docs/                    # Documentation
+│   ├── DOCKER.md           # Container deployment guide
+│   └── ROADMAP_OLD.md      # Historical roadmap
+├── .github/workflows/       # CI/CD pipeline
+├── knowledge_base.json      # Error patterns and solutions
+├── CHANGELOG.md            # Version history
+├── ROADMAP.md              # Development roadmap
+└── README.md               # This file
+```
+
+---
+
+## �🗸️ Project Roadmap
 
 For a comprehensive roadmap including future features and development plans, see [`ROADMAP.md`](ROADMAP.md). For detailed change history, see `CHANGELOG.md`.
 
-### 🚧 **Currently in Development (v2.1.2)**
+### ✅ **Version 2.1.3: The "Interactive Experience" Release (Current)**
 
-* **Security Hardening**: Externalizing SECRET_KEY, adding input validation, ZIP bomb protection
-* **Code Quality**: Comprehensive testing, dependency management, architecture improvements
-* **CI/CD Pipeline**: Automated testing and security scanning
-* **Docker Improvements**: Production-ready Dockerfile with Gunicorn, security hardening, health checks
+* ✅ **Interactive Dashboard**: Click-to-filter charts with real-time log filtering
+* ✅ **Enhanced UX**: Hover tooltips, smooth animations, export features (PDF/CSV/JSON)
+* ✅ **Reliability**: Comprehensive error handling and user feedback systems
+* ✅ **Bug Fixes**: Resolved chart stretching and filtering issues
 
-### ✅ **Version 2.1.0: The "Dashboard & Visualization" Release (Current)**
+### ✅ **Version 2.1.2: The "Security & Quality" Release**
 
-  * ✅ **Visual Dashboard**: Added a new "Dashboard" tab with Chart.js visualizations.
-  * ✅ **Docker Support**: Added a `Dockerfile` for easy, containerized deployment.
-  * ✅ **Intuitive Colors**: Implemented a logical color scheme for the log severity chart.
-  * ✅ **Expanded Knowledge Base**: Updated the knowledge base with more detailed error descriptions and solutions.
-  * ✅ **Python Version Fix**: Updated type hinting for compatibility with Python 3.10+.
+* ✅ **Security Hardening**: Externalized SECRET_KEY, ZIP bomb protection, input validation
+* ✅ **Code Quality**: Comprehensive testing, dependency management, architecture improvements
+* ✅ **CI/CD Pipeline**: Automated testing and security scanning
+* ✅ **Docker Improvements**: Production-ready Alpine builds with Gunicorn
 
 ---
 
