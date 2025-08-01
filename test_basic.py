@@ -61,8 +61,9 @@ class TestSecurity:
             large_content = "A" * 10000  # 10KB of repeated 'A's
             zf.writestr("bomb.txt", large_content)
         
-        # This should pass normal validation
-        validate_zip_file(tmp_path, 1024*1024, 1024*1024)
+        # This should FAIL validation due to high compression ratio
+        with pytest.raises(ValidationError, match="Suspicious compression ratio"):
+            validate_zip_file(tmp_path, 1024*1024, 1024*1024)
         
         tmp_path.unlink()
 
@@ -72,17 +73,22 @@ class TestApp:
     def test_index_get(self):
         """Test GET request to index."""
         app = create_app('testing')
+        # Need to configure Flask properly for testing
+        app.config['TESTING'] = True
         with app.test_client() as client:
-            response = client.get('/')
-            assert response.status_code == 200
+            with app.app_context():
+                response = client.get('/')
+                assert response.status_code == 200
     
     def test_index_post_no_file(self):
         """Test POST request without file."""
         app = create_app('testing')
+        app.config['TESTING'] = True
         with app.test_client() as client:
-            response = client.post('/')
-            assert response.status_code == 200
-            # Should redirect back to upload page with error
+            with app.app_context():
+                response = client.post('/')
+                assert response.status_code == 200
+                # Should redirect back to upload page with error
 
 if __name__ == '__main__':
     pytest.main([__file__])
