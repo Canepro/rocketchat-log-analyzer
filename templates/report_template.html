@@ -315,7 +315,7 @@
         // --- Chart.js Initialization ---
         const timelineData = {{ results.logs.chart_data_timeline | tojson }};
         const severityData = {{ results.logs.chart_data_severity | tojson }};
-        const logEntries = {{ results.logs.entries | tojson }};
+        const logEntries = {{ results.logs.content | tojson }};
 
         // Timeline Chart (Line) with Interactive Features
         if (timelineData.labels && timelineData.labels.length > 0) {
@@ -448,14 +448,19 @@
             // Show notification
             showFilterNotification(`Filtering logs for ${targetDate}`);
             
-            // Apply date filter
-            table.column(0).search(targetDate).draw();
+            // Apply date filter - column 1 is the 'time' column
+            table.column(1).search(targetDate).draw();
             
             // Switch to logs tab
             document.getElementById('defaultOpen').click();
             
             // Scroll to table
-            document.getElementById('logsTable').scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                const tableElement = document.getElementById('logsTable');
+                if (tableElement) {
+                    tableElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
         }
 
         function filterLogsBySeverity(severityLevel) {
@@ -464,14 +469,19 @@
             // Show notification
             showFilterNotification(`Filtering logs for ${severityLevel} level`);
             
-            // Apply severity filter
-            table.column(1).search(severityLevel).draw();
+            // Apply severity filter - column 0 is the 'level' column
+            table.column(0).search(severityLevel).draw();
             
             // Switch to logs tab
             document.getElementById('defaultOpen').click();
             
             // Scroll to table
-            document.getElementById('logsTable').scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                const tableElement = document.getElementById('logsTable');
+                if (tableElement) {
+                    tableElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
         }
 
         function showFilterNotification(message) {
@@ -546,7 +556,7 @@
             const analysisData = {
                 timestamp: new Date().toISOString(),
                 summary: {
-                    total_logs: {{ results.summary.data | length }},
+                    total_logs: {{ results.logs.total_count | default(0) }},
                     log_level: "{{ log_level_name }}",
                     charts: {
                         timeline: timelineData,
