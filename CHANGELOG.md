@@ -28,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **Smooth Transitions**: Animated scrolling and tab switching
 - **Accessibility**: Improved keyboard and screen reader support
 
+### 🐛 Bug Fixes
+- **Chart Stretching Issue**: Fixed infinite chart stretching problem that occurred after uploading support dumps
+  - Set fixed aspect ratios for both timeline and severity charts
+  - Added proper resize handling with debouncing
+  - Added CSS constraints to prevent chart container overflow
+  - Enhanced tab switching with proper chart resize management
+
 ---
 
 ## [2.1.2] - 2025-08-01 (Security & Quality Release)
