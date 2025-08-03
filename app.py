@@ -1,5 +1,6 @@
 # app.py
 from flask import Flask, render_template, request, flash
+# from flask_cors import CORS  # Will be enabled after installing flask-cors
 import os
 import tempfile
 import zipfile
@@ -14,6 +15,8 @@ from utils import (
     validate_zip_file, safe_extract_zip, find_dump_path, 
     get_safe_filename, setup_logging, ValidationError, LOG_LEVEL_NAMES
 )
+# Import API routes
+from api_routes import api
 
 def create_app(config_name=None):
     """Application factory pattern."""
@@ -24,7 +27,13 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
     
+    # Configure CORS for API routes (will be enabled after installing flask-cors)
+    # CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
     setup_logging()
+    
+    # Register API blueprint
+    app.register_blueprint(api, url_prefix='/api')
     
     # Disable template caching in development
     if app.config['DEBUG']:
@@ -38,7 +47,7 @@ def create_app(config_name=None):
             response.headers['Expires'] = '0'
             return response
     
-    # Register routes
+    # Register traditional web routes
     register_routes(app)
     
     return app
