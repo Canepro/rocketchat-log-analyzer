@@ -62,7 +62,8 @@ def upload_file():
         filename = secure_filename(file.filename)
         
         # Create session directory
-        session_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], session_id)
+        upload_folder = str(current_app.config['UPLOAD_FOLDER'])
+        session_dir = os.path.join(upload_folder, session_id)
         os.makedirs(session_dir, exist_ok=True)
         
         # Save uploaded file
@@ -70,9 +71,10 @@ def upload_file():
         file.save(file_path)
         
         # Validate the uploaded ZIP file
+        from pathlib import Path
         validate_zip_file(
-            file_path, 
-            current_app.config['MAX_UPLOAD_SIZE'], 
+            Path(file_path), 
+            current_app.config['MAX_CONTENT_LENGTH'], 
             current_app.config['MAX_EXTRACTED_SIZE']
         )
         
@@ -132,14 +134,19 @@ def analyze_logs(session_id: str):
         data = request.get_json() or {}
         log_level = data.get('log_level', 'info')
         
-        if log_level not in LOG_LEVEL_NAMES:
+        if log_level not in LOG_LEVEL_NAMES.values():
             return jsonify({
-                'error': f'Invalid log level. Must be one of: {", ".join(LOG_LEVEL_NAMES)}'
+                'error': f'Invalid log level. Must be one of: {", ".join(LOG_LEVEL_NAMES.values())}'
             }), 400
         
         # Extract the ZIP file
+        from pathlib import Path
         extract_dir = os.path.join(os.path.dirname(session['file_path']), 'extracted')
-        dump_path = safe_extract_zip(session['file_path'], extract_dir)
+        dump_path = safe_extract_zip(
+            session['file_path'], 
+            Path(extract_dir), 
+            current_app.config['MAX_SINGLE_FILE_SIZE']
+        )
         
         # Run analysis using existing analyzer
         current_app.logger.info(f"Starting analysis for session {session_id}")
