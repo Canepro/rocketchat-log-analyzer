@@ -143,9 +143,12 @@ def setup_logging(level: int = logging.INFO) -> None:
 
 # Log level names mapping for reports
 LOG_LEVEL_NAMES = {
-    10: 'DEBUG', 
-    20: 'INFO', 
-    30: 'WARNING', 
-    40: 'ERROR', 
+    10: 'DEBUG',
+    20: 'INFO',
+    30: 'WARNING',
+    40: 'ERROR',
     50: 'CRITICAL'
 }
+
+# Reverse mapping to convert textual levels back to numeric values
+LOG_LEVEL_NAME_TO_NUMBER = {name: level for level, name in LOG_LEVEL_NAMES.items()}

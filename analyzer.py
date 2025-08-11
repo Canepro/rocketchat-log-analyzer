@@ -5,7 +5,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 from datetime import datetime
-from utils import LOG_LEVEL_NAMES
+from utils import LOG_LEVEL_NAMES, LOG_LEVEL_NAME_TO_NUMBER
 
 # Construct an absolute path to the knowledge base to ensure it's always found.
 BASE_DIR = Path(__file__).resolve().parent
@@ -78,11 +78,26 @@ def analyze_logs(file_path, min_level=50):
                     else:
                         logging.warning(f"Skipping malformed line: {line.strip()}")
 
-        filtered_entries = [
-            entry for entry in found_entries
-            if (entry.get('level') is not None and entry.get('level') >= min_level)
-        ]
-        
+        filtered_entries = []
+        for entry in found_entries:
+            raw_level = entry.get('level')
+            numeric_level = None
+            if isinstance(raw_level, int):
+                numeric_level = raw_level
+            elif isinstance(raw_level, str):
+                level_str = raw_level.upper()
+                numeric_level = LOG_LEVEL_NAME_TO_NUMBER.get(level_str)
+                if numeric_level is None:
+                    try:
+                        numeric_level = int(raw_level)
+                    except ValueError:
+                        numeric_level = None
+
+            if numeric_level is not None and numeric_level >= min_level:
+                entry_copy = entry.copy()
+                entry_copy['level'] = numeric_level
+                filtered_entries.append(entry_copy)
+
         total_entry_count = len(filtered_entries)
         limited_entries = filtered_entries[-500:]
         summary = defaultdict(lambda: {'Message': '', 'Count': 0, 'LastSeen': ''})
